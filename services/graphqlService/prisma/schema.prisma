@@ -1,0 +1,881 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model adkats_bans {
+  ban_id              Int                         @id @default(autoincrement()) @db.UnsignedInt
+  player_id           Int                         @unique(map: "player_id_UNIQUE") @db.UnsignedInt
+  latest_record_id    Int                         @db.UnsignedInt
+  ban_notes           String                      @default("NoNotes") @db.VarChar(150)
+  ban_status          adkats_bans_ban_status      @default(Active)
+  ban_startTime       DateTime                    @db.DateTime(0)
+  ban_endTime         DateTime                    @db.DateTime(0)
+  ban_enforceName     adkats_bans_ban_enforceName @default(N)
+  ban_enforceGUID     adkats_bans_ban_enforceGUID @default(Y)
+  ban_enforceIP       adkats_bans_ban_enforceIP   @default(N)
+  ban_sync            String                      @default("-sync-") @db.VarChar(100)
+  adkats_records_main adkats_records_main         @relation(fields: [latest_record_id], references: [record_id], onDelete: Cascade, map: "adkats_bans_fk_latest_record_id")
+  tbl_playerdata      tbl_playerdata              @relation(fields: [player_id], references: [PlayerID], onDelete: Cascade, map: "adkats_bans_fk_player_id")
+
+  @@index([latest_record_id], map: "adkats_bans_fk_latest_record_id")
+}
+
+model adkats_battlecries {
+  player_id        Int            @id @db.UnsignedInt
+  player_battlecry String?        @db.VarChar(300)
+  tbl_playerdata   tbl_playerdata @relation(fields: [player_id], references: [PlayerID], onDelete: Cascade, onUpdate: NoAction, map: "adkats_battlecries_player_id")
+}
+
+model adkats_battlelog_players {
+  player_id      Int            @id @db.UnsignedInt
+  persona_id     BigInt         @db.UnsignedBigInt
+  user_id        BigInt         @db.UnsignedBigInt
+  gravatar       String?        @db.VarChar(32)
+  persona_banned Boolean        @default(false)
+  tbl_playerdata tbl_playerdata @relation(fields: [player_id], references: [PlayerID], onDelete: Cascade, map: "adkats_battlelog_players_ibfk_1")
+
+  @@unique([player_id, persona_id], map: "adkats_battlelog_players_player_id_persona_id_unique")
+  @@index([persona_id], map: "adkats_battlelog_players_persona_id_index")
+  @@index([user_id], map: "adkats_battlelog_players_user_id_index")
+}
+
+model adkats_challenge_definition {
+  ID                                 Int                                  @id @default(autoincrement()) @db.UnsignedInt
+  Name                               String                               @unique(map: "adkats_challenge_definition_idx_Name") @db.VarChar(200)
+  CreateTime                         DateTime                             @db.DateTime(0)
+  ModifyTime                         DateTime                             @db.DateTime(0)
+  adkats_challenge_definition_detail adkats_challenge_definition_detail[]
+  adkats_challenge_rule              adkats_challenge_rule[]
+
+  @@index([CreateTime], map: "adkats_challenge_definition_idx_CreateTime")
+  @@index([ModifyTime], map: "adkats_challenge_definition_idx_ModifyTime")
+}
+
+model adkats_challenge_definition_detail {
+  DefID                       Int                         @db.UnsignedInt
+  DetailID                    Int                         @db.UnsignedInt
+  Type                        String                      @db.VarChar(100)
+  Damage                      String?                     @db.VarChar(100)
+  WeaponCount                 Int                         @db.UnsignedInt
+  Weapon                      String?                     @db.VarChar(100)
+  KillCount                   Int                         @db.UnsignedInt
+  CreateTime                  DateTime                    @db.DateTime(0)
+  ModifyTime                  DateTime                    @db.DateTime(0)
+  adkats_challenge_definition adkats_challenge_definition @relation(fields: [DefID], references: [ID], onDelete: Cascade, map: "adkats_challenge_definition_detail_fk_DefID")
+
+  @@id([DefID, DetailID])
+  @@index([CreateTime], map: "adkats_challenge_definition_detail_idx_CreateTime")
+  @@index([ModifyTime], map: "adkats_challenge_definition_detail_idx_ModifyTime")
+}
+
+model adkats_challenge_entry {
+  ID                            Int                             @id @default(autoincrement()) @db.UnsignedInt
+  PlayerID                      Int                             @db.UnsignedInt
+  RuleID                        Int                             @db.UnsignedInt
+  Completed                     Int                             @db.UnsignedInt
+  Failed                        Int                             @db.UnsignedInt
+  Canceled                      Int                             @db.UnsignedInt
+  StartRound                    Int                             @db.UnsignedInt
+  StartTime                     DateTime                        @db.DateTime(0)
+  CompleteTime                  DateTime                        @db.DateTime(0)
+  tbl_playerdata                tbl_playerdata                  @relation(fields: [PlayerID], references: [PlayerID], onDelete: Cascade, map: "adkats_challenge_entry_fk_Play erID")
+  adkats_challenge_rule         adkats_challenge_rule           @relation(fields: [RuleID], references: [ID], onDelete: Cascade, map: "adkats_challenge_entry_fk_RuleID")
+  adkats_challenge_entry_detail adkats_challenge_entry_detail[]
+
+  @@index([CompleteTime], map: "adkats_challenge_entry_idx_CompleteTime")
+  @@index([PlayerID], map: "adkats_challenge_entry_idx_PlayerID")
+  @@index([RuleID], map: "adkats_challenge_entry_idx_RuleID")
+  @@index([StartTime], map: "adkats_challenge_entry_idx_StartTime")
+}
+
+model adkats_challenge_entry_detail {
+  EntryID                Int                    @db.UnsignedInt
+  DetailID               Int                    @db.UnsignedInt
+  VictimID               Int                    @db.UnsignedInt
+  Weapon                 String?                @db.VarChar(100)
+  RoundID                Int                    @db.UnsignedInt
+  DetailTime             DateTime               @db.DateTime(0)
+  adkats_challenge_entry adkats_challenge_entry @relation(fields: [EntryID], references: [ID], onDelete: Cascade, map: "adkats_challenge_entry_detail_fk_EntryID")
+  tbl_playerdata         tbl_playerdata         @relation(fields: [VictimID], references: [PlayerID], onDelete: Cascade, map: "adkats_challenge_entry_detail_fk_VictimID")
+
+  @@id([EntryID, DetailID])
+  @@index([DetailTime], map: "adkats_challenge_entry_detail_idx_DetailTime")
+  @@index([VictimID], map: "adkats_challenge_entry_detail_idx_VictimID")
+}
+
+model adkats_challenge_reward {
+  ID              Int        @id @default(autoincrement()) @db.UnsignedInt
+  ServerID        Int        @db.UnsignedSmallInt
+  Tier            Int        @db.UnsignedInt
+  Reward          String     @default("None") @db.VarChar(100)
+  Enabled         Int        @default(0) @db.UnsignedInt
+  DurationMinutes Int        @default(60) @db.UnsignedInt
+  CreateTime      DateTime   @db.DateTime(0)
+  ModifyTime      DateTime   @db.DateTime(0)
+  tbl_server      tbl_server @relation(fields: [ServerID], references: [ServerID], onDelete: NoAction, map: "adkats_challenge_reward_fk_ServerID")
+
+  @@unique([ServerID, Tier, Reward], map: "ServerID")
+  @@index([CreateTime], map: "adkats_challenge_reward_idx_CreateTime")
+  @@index([ModifyTime], map: "adkats_challenge_reward_idx_ModifyTime")
+}
+
+model adkats_challenge_rule {
+  ID                          Int                         @id @default(autoincrement()) @db.UnsignedInt
+  ServerID                    Int                         @db.UnsignedSmallInt
+  DefID                       Int                         @db.UnsignedInt
+  Enabled                     Int                         @default(1) @db.UnsignedInt
+  Name                        String                      @db.VarChar(200)
+  Tier                        Int                         @default(1) @db.UnsignedInt
+  CompletionType              String                      @default("None") @db.VarChar(100)
+  RoundCount                  Int                         @default(1) @db.UnsignedInt
+  DurationMinutes             Int                         @default(60) @db.UnsignedInt
+  DeathCount                  Int                         @default(1) @db.UnsignedInt
+  CreateTime                  DateTime                    @db.DateTime(0)
+  ModifyTime                  DateTime                    @db.DateTime(0)
+  RoundLastUsedTime           DateTime                    @default(dbgenerated("('1970-01-01 00:00:00')")) @db.DateTime(0)
+  PersonalLastUsedTime        DateTime                    @default(dbgenerated("('1970-01-01 00:00:00')")) @db.DateTime(0)
+  adkats_challenge_definition adkats_challenge_definition @relation(fields: [DefID], references: [ID], onDelete: Cascade, map: "adkats_challenge_rule_fk_DefID")
+  tbl_server                  tbl_server                  @relation(fields: [ServerID], references: [ServerID], onDelete: NoAction, map: "adkats_challenge_rule_fk_ServerID")
+  adkats_challenge_entry      adkats_challenge_entry[]
+
+  @@unique([Name, ServerID], map: "adkats_challenge_rule_idx_Name_Server")
+  @@index([CreateTime], map: "adkats_challenge_rule_idx_CreateTime")
+  @@index([DefID], map: "adkats_challenge_rule_idx_DefID")
+  @@index([ModifyTime], map: "adkats_challenge_rule_idx_ModifyTime")
+  @@index([PersonalLastUsedTime], map: "adkats_challenge_rule_idx_PersonalLastUsedTime")
+  @@index([RoundLastUsedTime], map: "adkats_challenge_rule_idx_RoundLastUsedTime")
+  @@index([ServerID], map: "adkats_challenge_rule_idx_ServerID")
+}
+
+model adkats_commands {
+  command_id                                                                Int                             @id @db.UnsignedInt
+  command_active                                                            adkats_commands_command_active  @default(Active)
+  command_key                                                               String                          @unique(map: "command_key_UNIQUE") @db.VarChar(100)
+  command_logging                                                           adkats_commands_command_logging @default(Log)
+  command_name                                                              String                          @db.VarChar(255)
+  command_text                                                              String                          @unique(map: "command_text_UNIQUE") @db.VarChar(100)
+  command_playerInteraction                                                 Boolean
+  command_access                                                            adkats_commands_command_access  @default(Any)
+  adkats_records_debug_adkats_commandsToadkats_records_debug_command_action adkats_records_debug[]          @relation("adkats_commandsToadkats_records_debug_command_action")
+  adkats_records_debug_adkats_commandsToadkats_records_debug_command_type   adkats_records_debug[]          @relation("adkats_commandsToadkats_records_debug_command_type")
+  adkats_records_main_adkats_commandsToadkats_records_main_command_action   adkats_records_main[]           @relation("adkats_commandsToadkats_records_main_command_action")
+  adkats_records_main_adkats_commandsToadkats_records_main_command_type     adkats_records_main[]           @relation("adkats_commandsToadkats_records_main_command_type")
+  adkats_rolecommands                                                       adkats_rolecommands[]
+}
+
+model adkats_infractions_global {
+  player_id      Int            @id @db.UnsignedInt
+  punish_points  Int
+  forgive_points Int
+  total_points   Int
+  tbl_playerdata tbl_playerdata @relation(fields: [player_id], references: [PlayerID], onDelete: Cascade, map: "adkats_infractions_global_fk_player_id")
+}
+
+model adkats_infractions_server {
+  player_id      Int            @db.UnsignedInt
+  server_id      Int            @db.UnsignedSmallInt
+  punish_points  Int
+  forgive_points Int
+  total_points   Int
+  tbl_playerdata tbl_playerdata @relation(fields: [player_id], references: [PlayerID], onDelete: Cascade, map: "adkats_infractions_server_fk_player_id")
+  tbl_server     tbl_server     @relation(fields: [server_id], references: [ServerID], onDelete: Cascade, map: "adkats_infractions_server_fk_server_id")
+
+  @@id([player_id, server_id])
+  @@index([server_id], map: "adkats_infractions_server_fk_server_id")
+}
+
+model adkats_orchestration {
+  setting_id     Int    @id @default(autoincrement())
+  setting_server Int    @db.SmallInt
+  setting_plugin String @db.VarChar(100)
+  setting_name   String @db.VarChar(100)
+  setting_value  String @db.VarChar(2000)
+
+  @@unique([setting_server, setting_plugin, setting_name], map: "setting_server")
+}
+
+model adkats_player_reputation {
+  player_id    Int   @id @db.UnsignedInt
+  game_id      Int   @db.UnsignedTinyInt
+  target_rep   Float @db.Float
+  source_rep   Float @db.Float
+  total_rep    Float @db.Float
+  total_rep_co Float @db.Float
+
+  @@index([game_id], map: "game_id")
+}
+
+model adkats_records_debug {
+  record_id                                                            Int                              @id @default(autoincrement()) @db.UnsignedInt
+  server_id                                                            Int                              @db.UnsignedSmallInt
+  command_type                                                         Int                              @db.UnsignedInt
+  command_action                                                       Int                              @db.UnsignedInt
+  command_numeric                                                      Int                              @default(0)
+  target_name                                                          String                           @default("NoTarget") @db.VarChar(45)
+  target_id                                                            Int?                             @db.UnsignedInt
+  source_name                                                          String                           @default("NoSource") @db.VarChar(45)
+  source_id                                                            Int?                             @db.UnsignedInt
+  record_message                                                       String                           @default("NoMessage") @db.VarChar(500)
+  record_time                                                          DateTime                         @db.DateTime(0)
+  adkats_read                                                          adkats_records_debug_adkats_read @default(N)
+  adkats_web                                                           Boolean                          @default(false)
+  adkats_commands_adkats_commandsToadkats_records_debug_command_action adkats_commands                  @relation("adkats_commandsToadkats_records_debug_command_action", fields: [command_action], references: [command_id], onDelete: Cascade, map: "adkats_records_debug_fk_command_action")
+  adkats_commands_adkats_commandsToadkats_records_debug_command_type   adkats_commands                  @relation("adkats_commandsToadkats_records_debug_command_type", fields: [command_type], references: [command_id], onDelete: Cascade, map: "adkats_records_debug_fk_command_type")
+  tbl_server                                                           tbl_server                       @relation(fields: [server_id], references: [ServerID], onDelete: Cascade, map: "adkats_records_debug_fk_server_id")
+
+  @@index([command_action], map: "adkats_records_debug_fk_command_action")
+  @@index([command_type], map: "adkats_records_debug_fk_command_type")
+  @@index([server_id], map: "adkats_records_debug_fk_server_id")
+}
+
+model adkats_records_main {
+  record_id                                                           Int                             @id @default(autoincrement()) @db.UnsignedInt
+  server_id                                                           Int                             @db.UnsignedSmallInt
+  command_type                                                        Int                             @db.UnsignedInt
+  command_action                                                      Int                             @db.UnsignedInt
+  command_numeric                                                     Int                             @default(0)
+  target_name                                                         String                          @default("NoTarget") @db.VarChar(45)
+  target_id                                                           Int?                            @db.UnsignedInt
+  source_name                                                         String                          @default("NoSource") @db.VarChar(45)
+  source_id                                                           Int?                            @db.UnsignedInt
+  record_message                                                      String                          @default("NoMessage") @db.VarChar(500)
+  record_time                                                         DateTime                        @db.DateTime(0)
+  adkats_read                                                         adkats_records_main_adkats_read @default(N)
+  adkats_web                                                          Boolean                         @default(false)
+  adkats_commands_adkats_commandsToadkats_records_main_command_action adkats_commands                 @relation("adkats_commandsToadkats_records_main_command_action", fields: [command_action], references: [command_id], onDelete: Cascade, map: "adkats_records_main_fk_command_action")
+  adkats_commands_adkats_commandsToadkats_records_main_command_type   adkats_commands                 @relation("adkats_commandsToadkats_records_main_command_type", fields: [command_type], references: [command_id], onDelete: Cascade, map: "adkats_records_main_fk_command_type")
+  tbl_server                                                          tbl_server                      @relation(fields: [server_id], references: [ServerID], onDelete: Cascade, map: "adkats_records_main_fk_server_id")
+  tbl_playerdata_adkats_records_main_source_idTotbl_playerdata        tbl_playerdata?                 @relation("adkats_records_main_source_idTotbl_playerdata", fields: [source_id], references: [PlayerID], map: "adkats_records_main_fk_source_id")
+  tbl_playerdata_adkats_records_main_target_idTotbl_playerdata        tbl_playerdata?                 @relation("adkats_records_main_target_idTotbl_playerdata", fields: [target_id], references: [PlayerID], onDelete: Cascade, map: "adkats_records_main_fk_target_id")
+  adkats_bans                                                         adkats_bans[]
+
+  @@index([command_action], map: "adkats_records_main_fk_command_action")
+  @@index([command_type], map: "adkats_records_main_fk_command_type")
+  @@index([server_id], map: "adkats_records_main_fk_server_id")
+  @@index([source_id], map: "adkats_records_main_fk_source_id")
+  @@index([target_id], map: "adkats_records_main_fk_target_id")
+}
+
+model adkats_rolecommands {
+  role_id         Int             @db.UnsignedInt
+  command_id      Int             @db.UnsignedInt
+  adkats_commands adkats_commands @relation(fields: [command_id], references: [command_id], onDelete: Cascade, map: "adkats_rolecommands_fk_command")
+  adkats_roles    adkats_roles    @relation(fields: [role_id], references: [role_id], onDelete: Cascade, map: "adkats_rolecommands_fk_role")
+
+  @@id([role_id, command_id])
+  @@index([command_id], map: "adkats_rolecommands_fk_command")
+  @@index([role_id], map: "adkats_rolecommands_fk_role")
+}
+
+model adkats_rolegroups {
+  role_id      Int          @db.UnsignedInt
+  group_key    String       @db.VarChar(100)
+  adkats_roles adkats_roles @relation(fields: [role_id], references: [role_id], onDelete: Cascade, map: "adkats_rolegroups_fk_role")
+
+  @@id([role_id, group_key])
+  @@index([group_key], map: "adkats_rolegroups_fk_command")
+  @@index([role_id], map: "adkats_rolegroups_fk_role")
+}
+
+model adkats_roles {
+  role_id             Int                   @id @default(autoincrement()) @db.UnsignedInt
+  role_key            String                @unique(map: "role_key_UNIQUE") @db.VarChar(100)
+  role_name           String                @db.VarChar(255)
+  adkats_rolecommands adkats_rolecommands[]
+  adkats_rolegroups   adkats_rolegroups[]
+  adkats_users        adkats_users[]
+}
+
+model adkats_settings {
+  server_id     Int        @db.UnsignedSmallInt
+  setting_name  String     @default("SettingName") @db.VarChar(200)
+  setting_type  String     @default("SettingType") @db.VarChar(45)
+  setting_value String?    @db.VarChar(10000)
+  tbl_server    tbl_server @relation(fields: [server_id], references: [ServerID], onDelete: Cascade, map: "adkats_settings_fk_server_id")
+
+  @@id([server_id, setting_name])
+}
+
+model adkats_specialplayers {
+  specialplayer_id  Int             @id @default(autoincrement()) @db.UnsignedInt
+  player_group      String          @db.VarChar(100)
+  player_id         Int?            @db.UnsignedInt
+  player_game       Int?            @db.UnsignedTinyInt
+  player_server     Int?            @db.UnsignedSmallInt
+  player_identifier String?         @db.VarChar(100)
+  player_effective  DateTime        @db.DateTime(0)
+  player_expiration DateTime        @db.DateTime(0)
+  tbl_games         tbl_games?      @relation(fields: [player_game], references: [GameID], onDelete: Cascade, onUpdate: NoAction, map: "adkats_specialplayers_game_id")
+  tbl_playerdata    tbl_playerdata? @relation(fields: [player_id], references: [PlayerID], onDelete: Cascade, onUpdate: NoAction, map: "adkats_specialplayers_player_id")
+  tbl_server        tbl_server?     @relation(fields: [player_server], references: [ServerID], onDelete: Cascade, onUpdate: NoAction, map: "adkats_specialplayers_server_id")
+
+  @@index([player_game], map: "adkats_specialplayers_game_id")
+  @@index([player_id], map: "adkats_specialplayers_player_id")
+  @@index([player_server], map: "adkats_specialplayers_server_id")
+}
+
+model adkats_statistics {
+  stat_id        Int             @id @default(autoincrement()) @db.UnsignedInt
+  server_id      Int             @db.UnsignedSmallInt
+  round_id       Int             @db.UnsignedInt
+  stat_type      String          @db.VarChar(50)
+  target_name    String          @db.VarChar(50)
+  target_id      Int?            @db.UnsignedInt
+  stat_value     Float           @db.Float
+  stat_comment   String?         @db.Text
+  stat_time      DateTime        @default(dbgenerated("('0000-00-00 00:00:00')")) @db.DateTime(0)
+  tbl_server     tbl_server      @relation(fields: [server_id], references: [ServerID], onDelete: NoAction, onUpdate: NoAction, map: "adkats_statistics_server_id_fk")
+  tbl_playerdata tbl_playerdata? @relation(fields: [target_id], references: [PlayerID], onDelete: NoAction, onUpdate: NoAction, map: "adkats_statistics_target_id_fk")
+
+  @@index([server_id], map: "server_id")
+  @@index([stat_time], map: "stat_time")
+  @@index([stat_type], map: "stat_type")
+  @@index([target_id], map: "target_id")
+}
+
+model adkats_users {
+  user_id             Int                   @id @default(autoincrement()) @db.UnsignedInt
+  user_name           String                @db.VarChar(100)
+  user_email          String?               @db.VarChar(255)
+  user_phone          String?               @db.VarChar(45)
+  user_role           Int                   @default(1) @db.UnsignedInt
+  user_expiration     DateTime              @db.DateTime(0)
+  user_notes          String                @default("No Notes") @db.VarChar(1000)
+  adkats_roles        adkats_roles          @relation(fields: [user_role], references: [role_id], onDelete: Cascade, map: "adkats_users_fk_role")
+  adkats_usersoldiers adkats_usersoldiers[]
+
+  @@index([user_role], map: "adkats_users_fk_role")
+}
+
+model adkats_usersoldiers {
+  user_id        Int            @db.UnsignedInt
+  player_id      Int            @db.UnsignedInt
+  tbl_playerdata tbl_playerdata @relation(fields: [player_id], references: [PlayerID], onDelete: Cascade, map: "adkats_usersoldiers_fk_player")
+  adkats_users   adkats_users   @relation(fields: [user_id], references: [user_id], onDelete: Cascade, map: "adkats_usersoldiers_fk_user")
+
+  @@id([user_id, player_id])
+  @@index([player_id], map: "adkats_usersoldiers_fk_player")
+  @@index([user_id], map: "adkats_usersoldiers_fk_user")
+}
+
+model bfacp_assigned_roles {
+  id          Int         @id @default(autoincrement()) @db.UnsignedInt
+  user_id     Int         @db.UnsignedInt
+  role_id     Int         @db.UnsignedInt
+  bfacp_roles bfacp_roles @relation(fields: [role_id], references: [id], map: "bfacp_assigned_roles_role_id_foreign")
+  bfacp_users bfacp_users @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "bfacp_assigned_roles_user_id_foreign")
+
+  @@index([role_id], map: "bfacp_assigned_roles_role_id_foreign")
+  @@index([user_id], map: "bfacp_assigned_roles_user_id_foreign")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
+model bfacp_migrations {
+  migration String @db.VarChar(255)
+  batch     Int
+
+  @@ignore
+}
+
+model bfacp_options {
+  option_id          Int     @id @default(autoincrement()) @db.UnsignedInt
+  option_key         String  @unique(map: "bfacp_options_option_key_unique") @db.VarChar(64)
+  option_title       String  @db.VarChar(100)
+  option_value       String? @db.LongText
+  option_description String? @db.VarChar(255)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
+model bfacp_password_reminders {
+  email      String   @db.VarChar(255)
+  token      String   @db.VarChar(255)
+  created_at DateTime @default(dbgenerated("('0000-00-00 00:00:00')")) @db.Timestamp(0)
+
+  @@ignore
+}
+
+model bfacp_permission_role {
+  id                Int               @id @default(autoincrement()) @db.UnsignedInt
+  permission_id     Int               @db.UnsignedInt
+  role_id           Int               @db.UnsignedInt
+  bfacp_permissions bfacp_permissions @relation(fields: [permission_id], references: [id], onDelete: Cascade, map: "bfacp_permission_role_permission_id_foreign")
+  bfacp_roles       bfacp_roles       @relation(fields: [role_id], references: [id], onDelete: Cascade, map: "bfacp_permission_role_role_id_foreign")
+
+  @@index([permission_id], map: "bfacp_permission_role_permission_id_foreign")
+  @@index([role_id], map: "bfacp_permission_role_role_id_foreign")
+}
+
+model bfacp_permissions {
+  id                    Int                     @id @default(autoincrement()) @db.UnsignedInt
+  name                  String                  @unique(map: "bfacp_permissions_name_unique") @db.VarChar(255)
+  display_name          String                  @db.VarChar(255)
+  created_at            DateTime                @default(dbgenerated("('0000-00-00 00:00:00')")) @db.Timestamp(0)
+  updated_at            DateTime                @default(dbgenerated("('0000-00-00 00:00:00')")) @db.Timestamp(0)
+  bfacp_permission_role bfacp_permission_role[]
+}
+
+model bfacp_roles {
+  id                    Int                     @id @default(autoincrement()) @db.UnsignedInt
+  name                  String                  @unique(map: "bfacp_roles_name_unique") @db.VarChar(255)
+  created_at            DateTime                @default(dbgenerated("('0000-00-00 00:00:00')")) @db.Timestamp(0)
+  updated_at            DateTime                @default(dbgenerated("('0000-00-00 00:00:00')")) @db.Timestamp(0)
+  bfacp_assigned_roles  bfacp_assigned_roles[]
+  bfacp_permission_role bfacp_permission_role[]
+}
+
+model bfacp_sessions {
+  id            String @unique(map: "bfacp_sessions_id_unique") @db.VarChar(255)
+  payload       String @db.Text
+  last_activity Int
+}
+
+model bfacp_settings_servers {
+  server_id      Int        @id @db.UnsignedSmallInt
+  rcon_password  String?    @db.Text
+  filter         String?    @db.VarChar(255)
+  monitor_key    Int?       @db.UnsignedInt
+  battlelog_guid String?    @db.VarChar(100)
+  created_at     DateTime   @default(dbgenerated("('0000-00-00 00:00:00')")) @db.Timestamp(0)
+  updated_at     DateTime   @default(dbgenerated("('0000-00-00 00:00:00')")) @db.Timestamp(0)
+  tbl_server     tbl_server @relation(fields: [server_id], references: [ServerID], onDelete: Cascade, map: "bfacp_settings_servers_server_id_foreign")
+}
+
+model bfacp_settings_users {
+  user_id                   Int         @id @db.UnsignedInt
+  lang                      String      @default("en") @db.VarChar(3)
+  timezone                  String      @default("UTC") @db.VarChar(255)
+  notifications             Boolean     @default(true)
+  notifications_alert       Boolean     @default(true)
+  notifications_alert_sound String      @default("alert0") @db.VarChar(30)
+  created_at                DateTime    @default(dbgenerated("('0000-00-00 00:00:00')")) @db.Timestamp(0)
+  updated_at                DateTime    @default(dbgenerated("('0000-00-00 00:00:00')")) @db.Timestamp(0)
+  bfacp_users               bfacp_users @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "bfacp_settings_users_user_id_foreign")
+
+  @@index([lang], map: "bfacp_settings_users_lang_index")
+  @@index([timezone], map: "bfacp_settings_users_timezone_index")
+}
+
+model bfacp_users {
+  id                   Int                    @id @default(autoincrement()) @db.UnsignedInt
+  username             String                 @unique(map: "bfacp_users_username_unique") @db.VarChar(20)
+  email                String                 @unique(map: "bfacp_users_email_unique") @db.VarChar(255)
+  password             String                 @db.VarChar(255)
+  confirmation_code    String                 @db.VarChar(255)
+  remember_token       String?                @db.VarChar(255)
+  confirmed            Boolean                @default(false)
+  created_at           DateTime               @default(dbgenerated("('0000-00-00 00:00:00')")) @db.Timestamp(0)
+  updated_at           DateTime               @default(dbgenerated("('0000-00-00 00:00:00')")) @db.Timestamp(0)
+  lastseen_at          DateTime               @default(dbgenerated("('0000-00-00 00:00:00')")) @db.Timestamp(0)
+  bfacp_assigned_roles bfacp_assigned_roles[]
+  bfacp_settings_users bfacp_settings_users?
+  bfacp_users_soldiers bfacp_users_soldiers[]
+}
+
+model bfacp_users_soldiers {
+  user_id        Int            @db.UnsignedInt
+  player_id      Int            @db.UnsignedInt
+  tbl_playerdata tbl_playerdata @relation(fields: [player_id], references: [PlayerID], onDelete: Cascade, map: "bfacp_users_soldiers_player_id_foreign")
+  bfacp_users    bfacp_users    @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "bfacp_users_soldiers_user_id_foreign")
+
+  @@id([user_id, player_id])
+  @@index([player_id], map: "bfacp_users_soldiers_player_id_index")
+  @@index([user_id], map: "bfacp_users_soldiers_user_id_index")
+}
+
+model tbl_chatlog {
+  ID             Int             @id @default(autoincrement())
+  logDate        DateTime?       @db.DateTime(0)
+  ServerID       Int             @db.UnsignedSmallInt
+  logSubset      String?         @db.VarChar(45)
+  logSoldierName String?         @db.VarChar(45)
+  logMessage     String?         @db.MediumText
+  logPlayerID    Int?            @db.UnsignedInt
+  tbl_playerdata tbl_playerdata? @relation(fields: [logPlayerID], references: [PlayerID], onDelete: Cascade, map: "tbl_chatlog_ibfk_player_id")
+
+  @@index([ServerID], map: "INDEX_SERVERID")
+  @@index([logDate], map: "INDEX_logDate")
+  @@index([logPlayerID], map: "logPlayerID")
+  @@index([logSoldierName], map: "logSoldierName")
+}
+
+model tbl_currentplayers {
+  ServerID     Int       @db.SmallInt
+  Soldiername  String    @db.VarChar(45)
+  GlobalRank   Int       @default(0) @db.UnsignedSmallInt
+  ClanTag      String?   @db.VarChar(45)
+  Score        Int       @default(0)
+  Kills        Int       @default(0)
+  Headshots    Int       @default(0)
+  Deaths       Int       @default(0)
+  Suicide      Int?
+  Killstreak   Int?      @default(0) @db.SmallInt
+  Deathstreak  Int?      @default(0) @db.SmallInt
+  TeamID       Int?      @db.TinyInt
+  SquadID      Int?      @db.TinyInt
+  EA_GUID      String    @default("") @db.VarChar(45)
+  PB_GUID      String    @default("") @db.VarChar(45)
+  IP_aton      Int?      @db.UnsignedInt
+  CountryCode  String?   @default("") @db.VarChar(2)
+  Ping         Int?      @db.SmallInt
+  PlayerJoined DateTime? @db.DateTime(0)
+
+  @@id([ServerID, Soldiername])
+}
+
+model tbl_dogtags {
+  KillerID                                                  Int               @db.UnsignedInt
+  VictimID                                                  Int               @db.UnsignedInt
+  Count                                                     Int               @default(0) @db.UnsignedSmallInt
+  tbl_server_player_tbl_dogtags_KillerIDTotbl_server_player tbl_server_player @relation("tbl_dogtags_KillerIDTotbl_server_player", fields: [KillerID], references: [StatsID], onDelete: Cascade, onUpdate: NoAction, map: "fk_tbl_dogtags_tbl_server_player1")
+  tbl_server_player_tbl_dogtags_VictimIDTotbl_server_player tbl_server_player @relation("tbl_dogtags_VictimIDTotbl_server_player", fields: [VictimID], references: [StatsID], onDelete: Cascade, onUpdate: NoAction, map: "fk_tbl_dogtags_tbl_server_player2")
+
+  @@id([KillerID, VictimID])
+  @@index([KillerID], map: "fk_tbl_dogtags_tbl_server_player1")
+  @@index([VictimID], map: "fk_tbl_dogtags_tbl_server_player2")
+}
+
+model tbl_extendedroundstats {
+  roundstat_id         Int      @id @default(autoincrement()) @db.UnsignedInt
+  server_id            Int      @db.UnsignedSmallInt
+  round_id             Int      @db.UnsignedInt
+  round_elapsedTimeSec Int      @db.UnsignedInt
+  team1_count          Int      @db.UnsignedInt
+  team2_count          Int      @db.UnsignedInt
+  team1_score          Int
+  team2_score          Int
+  team1_spm            Float
+  team2_spm            Float
+  team1_tickets        Int
+  team2_tickets        Int
+  team1_tpm            Float
+  team2_tpm            Float
+  roundstat_time       DateTime @db.DateTime(0)
+}
+
+model tbl_games {
+  GameID                Int                     @id @default(autoincrement()) @db.UnsignedTinyInt
+  Name                  String?                 @unique(map: "name_unique") @db.VarChar(45)
+  adkats_specialplayers adkats_specialplayers[]
+}
+
+model tbl_mapstats {
+  ID                  Int       @id @default(autoincrement()) @db.UnsignedInt
+  ServerID            Int       @default(0) @db.UnsignedSmallInt
+  TimeMapLoad         DateTime? @db.DateTime(0)
+  TimeRoundStarted    DateTime? @db.DateTime(0)
+  TimeRoundEnd        DateTime? @db.DateTime(0)
+  MapName             String?   @db.VarChar(45)
+  Gamemode            String?   @db.VarChar(45)
+  Roundcount          Int       @default(0) @db.SmallInt
+  NumberofRounds      Int       @default(0) @db.SmallInt
+  MinPlayers          Int       @default(0) @db.SmallInt
+  AvgPlayers          Float     @default(0)
+  MaxPlayers          Int       @default(0) @db.SmallInt
+  PlayersJoinedServer Int       @default(0) @db.SmallInt
+  PlayersLeftServer   Int       @default(0) @db.SmallInt
+
+  @@index([ServerID], map: "ServerID_INDEX")
+}
+
+model tbl_playerdata {
+  PlayerID                                                          Int                             @id @default(autoincrement()) @db.UnsignedInt
+  GameID                                                            Int                             @default(0) @db.UnsignedTinyInt
+  ClanTag                                                           String?                         @db.VarChar(10)
+  SoldierName                                                       String?                         @db.VarChar(45)
+  GlobalRank                                                        Int                             @default(0) @db.UnsignedSmallInt
+  PBGUID                                                            String?                         @db.VarChar(32)
+  EAGUID                                                            String?                         @db.VarChar(35)
+  IP_Address                                                        String?                         @db.VarChar(15)
+  DiscordID                                                         String?                         @db.VarChar(50)
+  IPv6_Address                                                      Bytes?                          @db.VarBinary(16)
+  CountryCode                                                       String?                         @db.VarChar(2)
+  created_at                                                        DateTime                        @default(now()) @db.Timestamp(0)
+  updated_at                                                        DateTime                        @default(now()) @db.Timestamp(0)
+  adkats_bans                                                       adkats_bans?
+  adkats_battlecries                                                adkats_battlecries?
+  adkats_battlelog_players                                          adkats_battlelog_players?
+  adkats_challenge_entry                                            adkats_challenge_entry[]
+  adkats_challenge_entry_detail                                     adkats_challenge_entry_detail[]
+  adkats_infractions_global                                         adkats_infractions_global?
+  adkats_infractions_server                                         adkats_infractions_server[]
+  adkats_records_main_adkats_records_main_source_idTotbl_playerdata adkats_records_main[]           @relation("adkats_records_main_source_idTotbl_playerdata")
+  adkats_records_main_adkats_records_main_target_idTotbl_playerdata adkats_records_main[]           @relation("adkats_records_main_target_idTotbl_playerdata")
+  adkats_specialplayers                                             adkats_specialplayers[]
+  adkats_statistics                                                 adkats_statistics[]
+  adkats_usersoldiers                                               adkats_usersoldiers[]
+  bfacp_users_soldiers                                              bfacp_users_soldiers[]
+  tbl_chatlog                                                       tbl_chatlog[]
+  tbl_playerrank                                                    tbl_playerrank[]
+  tbl_server_player                                                 tbl_server_player[]
+
+  @@unique([GameID, EAGUID], map: "UNIQUE_playerdata")
+  @@index([SoldierName], map: "INDEX_SoldierName")
+  @@index([created_at], map: "created_at")
+  @@index([updated_at], map: "updated_at")
+}
+
+model tbl_playerrank {
+  PlayerID       Int            @default(0) @db.UnsignedInt
+  ServerGroup    Int            @default(0) @db.UnsignedSmallInt
+  rankScore      Int            @default(0) @db.UnsignedInt
+  rankKills      Int            @default(0) @db.UnsignedInt
+  tbl_playerdata tbl_playerdata @relation(fields: [PlayerID], references: [PlayerID], onDelete: Cascade, onUpdate: NoAction, map: "fk_tbl_playerrank_tbl_playerdata")
+
+  @@id([PlayerID, ServerGroup])
+  @@index([rankKills], map: "INDEX_KILLSRANKING")
+  @@index([rankScore], map: "INDEX_SCORERANKING")
+}
+
+model tbl_playerstats {
+  StatsID           Int               @id @db.UnsignedInt
+  Score             Int               @default(0)
+  Kills             Int               @default(0) @db.UnsignedInt
+  Headshots         Int               @default(0) @db.UnsignedInt
+  Deaths            Int               @default(0) @db.UnsignedInt
+  Suicide           Int               @default(0) @db.UnsignedInt
+  TKs               Int               @default(0) @db.UnsignedInt
+  Playtime          Int               @default(0) @db.UnsignedInt
+  Rounds            Int               @default(0) @db.UnsignedInt
+  FirstSeenOnServer DateTime?         @db.DateTime(0)
+  LastSeenOnServer  DateTime?         @db.DateTime(0)
+  Killstreak        Int               @default(0) @db.UnsignedSmallInt
+  Deathstreak       Int               @default(0) @db.UnsignedSmallInt
+  HighScore         Int               @default(0) @db.UnsignedMediumInt
+  rankScore         Int               @default(0) @db.UnsignedInt
+  rankKills         Int               @default(0) @db.UnsignedInt
+  Wins              Int               @default(0) @db.UnsignedInt
+  Losses            Int               @default(0) @db.UnsignedInt
+  tbl_server_player tbl_server_player @relation(fields: [StatsID], references: [StatsID], onDelete: Cascade, onUpdate: NoAction, map: "fk_tbl_playerstats_tbl_server_player1")
+
+  @@index([rankKills], map: "INDEX_RANK_KILLS")
+  @@index([rankScore], map: "INDEX_RANK_SCORE")
+  @@index([Score], map: "INDEX_Score")
+}
+
+model tbl_server {
+  ServerID                  Int                         @id @default(autoincrement()) @db.UnsignedSmallInt
+  ServerGroup               Int                         @default(0) @db.UnsignedTinyInt
+  IP_Address                String?                     @unique(map: "IP_Address_UNIQUE") @db.VarChar(45)
+  ServerName                String?                     @db.VarChar(200)
+  GameID                    Int                         @default(0) @db.UnsignedTinyInt
+  usedSlots                 Int?                        @default(0) @db.UnsignedSmallInt
+  maxSlots                  Int?                        @default(0) @db.UnsignedSmallInt
+  mapName                   String?                     @db.VarChar(45)
+  fullMapName               String?                     @db.Text
+  Gamemode                  String?                     @db.VarChar(45)
+  GameMod                   String?                     @db.VarChar(45)
+  PBversion                 String?                     @db.VarChar(45)
+  ConnectionState           String?                     @db.VarChar(45)
+  adkats_challenge_reward   adkats_challenge_reward[]
+  adkats_challenge_rule     adkats_challenge_rule[]
+  adkats_infractions_server adkats_infractions_server[]
+  adkats_records_debug      adkats_records_debug[]
+  adkats_records_main       adkats_records_main[]
+  adkats_settings           adkats_settings[]
+  adkats_specialplayers     adkats_specialplayers[]
+  adkats_statistics         adkats_statistics[]
+  bfacp_settings_servers    bfacp_settings_servers?
+  tbl_server_player         tbl_server_player[]
+  tbl_server_stats          tbl_server_stats?
+
+  @@index([ServerGroup], map: "INDEX_SERVERGROUP")
+}
+
+model tbl_server_player {
+  StatsID                                             Int                 @id @default(autoincrement()) @db.UnsignedInt
+  ServerID                                            Int                 @db.UnsignedSmallInt
+  PlayerID                                            Int                 @db.UnsignedInt
+  tbl_playerdata                                      tbl_playerdata      @relation(fields: [PlayerID], references: [PlayerID], onDelete: Cascade, onUpdate: NoAction, map: "fk_tbl_server_player_tbl_playerdata")
+  tbl_server                                          tbl_server          @relation(fields: [ServerID], references: [ServerID], onDelete: Cascade, onUpdate: NoAction, map: "fk_tbl_server_player_tbl_server")
+  tbl_dogtags_tbl_dogtags_KillerIDTotbl_server_player tbl_dogtags[]       @relation("tbl_dogtags_KillerIDTotbl_server_player")
+  tbl_dogtags_tbl_dogtags_VictimIDTotbl_server_player tbl_dogtags[]       @relation("tbl_dogtags_VictimIDTotbl_server_player")
+  tbl_playerstats                                     tbl_playerstats?
+  tbl_sessions                                        tbl_sessions[]
+  tbl_weapons_stats                                   tbl_weapons_stats[]
+
+  @@unique([ServerID, PlayerID], map: "UNIQUE_INDEX")
+  @@index([PlayerID], map: "fk_tbl_server_player_tbl_playerdata")
+  @@index([ServerID], map: "fk_tbl_server_player_tbl_server")
+}
+
+model tbl_server_stats {
+  ServerID     Int        @id @db.UnsignedSmallInt
+  CountPlayers BigInt     @default(0)
+  SumScore     BigInt     @default(0)
+  AvgScore     Float      @default(0) @db.Float
+  SumKills     BigInt     @default(0)
+  AvgKills     Float      @default(0) @db.Float
+  SumHeadshots BigInt     @default(0)
+  AvgHeadshots Float      @default(0) @db.Float
+  SumDeaths    BigInt     @default(0)
+  AvgDeaths    Float      @default(0) @db.Float
+  SumSuicide   BigInt     @default(0)
+  AvgSuicide   Float      @default(0) @db.Float
+  SumTKs       BigInt     @default(0)
+  AvgTKs       Float      @default(0) @db.Float
+  SumPlaytime  BigInt     @default(0)
+  AvgPlaytime  Float      @default(0) @db.Float
+  SumRounds    BigInt     @default(0)
+  AvgRounds    Float      @default(0) @db.Float
+  tbl_server   tbl_server @relation(fields: [ServerID], references: [ServerID], onDelete: Cascade, onUpdate: NoAction, map: "fk_tbl_server_stats_tbl_server")
+
+  @@index([ServerID], map: "fk_tbl_server_stats_tbl_server")
+}
+
+model tbl_sessions {
+  SessionID         Int               @id @default(autoincrement()) @db.UnsignedInt
+  StatsID           Int               @db.UnsignedInt
+  StartTime         DateTime          @db.DateTime(0)
+  EndTime           DateTime          @db.DateTime(0)
+  Score             Int               @default(0) @db.MediumInt
+  Kills             Int               @default(0) @db.UnsignedSmallInt
+  Headshots         Int               @default(0) @db.UnsignedSmallInt
+  Deaths            Int               @default(0) @db.UnsignedSmallInt
+  TKs               Int               @default(0) @db.UnsignedSmallInt
+  Suicide           Int               @default(0) @db.UnsignedSmallInt
+  RoundCount        Int               @default(0) @db.UnsignedTinyInt
+  Playtime          Int               @default(0) @db.UnsignedMediumInt
+  Killstreak        Int               @default(0) @db.UnsignedSmallInt
+  Deathstreak       Int               @default(0) @db.UnsignedSmallInt
+  HighScore         Int               @default(0) @db.UnsignedMediumInt
+  Wins              Int               @default(0) @db.UnsignedTinyInt
+  Losses            Int               @default(0) @db.UnsignedTinyInt
+  tbl_server_player tbl_server_player @relation(fields: [StatsID], references: [StatsID], onDelete: Cascade, onUpdate: NoAction, map: "fk_tbl_sessions_tbl_server_player")
+
+  @@index([StartTime], map: "INDEX_STARTTIME")
+  @@index([StatsID], map: "INDEX_STATSID")
+}
+
+model tbl_teamscores {
+  ServerID     Int  @db.UnsignedSmallInt
+  TeamID       Int  @db.UnsignedSmallInt
+  Score        Int?
+  WinningScore Int?
+
+  @@id([ServerID, TeamID])
+}
+
+model tbl_weapons {
+  WeaponID       Int     @id @default(autoincrement()) @db.UnsignedInt
+  GameID         Int     @db.UnsignedTinyInt
+  Friendlyname   String? @db.VarChar(45)
+  Fullname       String? @db.VarChar(100)
+  Damagetype     String? @db.VarChar(45)
+  Slot           String? @db.VarChar(45)
+  Kitrestriction String? @db.VarChar(45)
+
+  @@unique([GameID, Fullname], map: "unique")
+}
+
+model tbl_weapons_stats {
+  StatsID           Int               @db.UnsignedInt
+  WeaponID          Int               @db.UnsignedInt
+  Kills             Int               @default(0) @db.UnsignedInt
+  Headshots         Int               @default(0) @db.UnsignedInt
+  Deaths            Int               @default(0) @db.UnsignedInt
+  tbl_server_player tbl_server_player @relation(fields: [StatsID], references: [StatsID], onDelete: Cascade, onUpdate: NoAction, map: "fk_tbl_weapons_stats_tbl_server_player_")
+
+  @@id([StatsID, WeaponID])
+  @@index([Kills, Deaths], map: "Kills_Death_idx")
+  @@index([Kills, Headshots], map: "Kills_Head_idx")
+}
+
+model vsm_tbrowsersessions {
+  id          Int     @id @default(autoincrement())
+  sessionID   String  @db.VarChar(250)
+  time        Int
+  lockedUntil Int     @default(0)
+  error       String? @db.VarChar(300)
+  userID      Int?
+  tSessionID  Int?
+}
+
+model vsm_tfilter {
+  id     Int     @id @default(autoincrement())
+  userID Int?
+  server String? @db.VarChar(10)
+  gruppe String? @db.VarChar(10)
+}
+
+model vsm_tuser {
+  id            Int     @id @default(autoincrement())
+  sessionID     String? @db.VarChar(250)
+  email         String? @db.VarChar(100)
+  password      String? @db.VarChar(40)
+  passwordDummy String? @db.VarChar(20)
+  salt          String? @db.VarChar(5)
+  rights        Int?
+}
+
+model vsm_vips {
+  ID          Int      @id @default(autoincrement())
+  gametype    String   @db.VarChar(3)
+  servergroup String   @db.VarChar(2)
+  playername  String?  @db.VarChar(35)
+  timestamp   DateTime @default(now()) @db.Timestamp(0)
+  status      String   @db.VarChar(8)
+  admin       String?  @db.VarChar(35)
+  comment     String?  @db.Text
+  guid        String?  @db.VarChar(35)
+  discord_id  BigInt?
+
+  @@unique([servergroup, playername, gametype], map: "servergroup")
+}
+
+enum adkats_bans_ban_status {
+  Active
+  Expired
+  Disabled
+}
+
+enum adkats_bans_ban_enforceName {
+  Y
+  N
+}
+
+enum adkats_bans_ban_enforceGUID {
+  Y
+  N
+}
+
+enum adkats_bans_ban_enforceIP {
+  Y
+  N
+}
+
+enum adkats_commands_command_active {
+  Active
+  Disabled
+  Invisible
+}
+
+enum adkats_commands_command_logging {
+  Log
+  Mandatory
+  Ignore
+  Unable
+}
+
+enum adkats_commands_command_access {
+  Any
+  AnyHidden
+  AnyVisible
+  GlobalVisible
+  TeamVisible
+  SquadVisible
+}
+
+enum adkats_records_debug_adkats_read {
+  Y
+  N
+}
+
+enum adkats_records_main_adkats_read {
+  Y
+  N
+}

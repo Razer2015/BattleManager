@@ -1,0 +1,25 @@
+{
+  "name": "graphqlservice",
+  "version": "1.0.0",
+  "description": "Service used for queries between the backend and the frontend",
+  "main": "index.mjs",
+  "type": "module",
+  "scripts": {
+    "start": "nodemon src/index.mjs",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "xfileFIN",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^3.11.1",
+    "apollo-server-core": "^3.6.6",
+    "apollo-server-fastify": "^3.6.6",
+    "dotenv": "^16.0.0",
+    "fastify": "^3.27.4",
+    "graphql": "^16.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15",
+    "prisma": "^3.11.1"
+  }
+}
