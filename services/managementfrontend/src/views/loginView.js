@@ -4,9 +4,12 @@ import { useMutation } from '@apollo/client';
 import { LOGIN } from '../graphql/mutations';
 import { saveTokens } from '../utilities/tokens';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { notificationWithIcon } from '../utilities/notification';
 
 export function LoginView() {
-    const [login, { data }] = useMutation(LOGIN);
+    const [login, { data }] = useMutation(LOGIN, {
+        onError: (error) => notificationWithIcon('error', error.message),
+    });
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -27,7 +30,6 @@ export function LoginView() {
             else {
                 navigate('/');
             }
-
         }
     };
 

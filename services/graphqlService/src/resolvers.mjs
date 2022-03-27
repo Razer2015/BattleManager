@@ -11,6 +11,12 @@ export const resolvers = {
     Timestamp: Timestamp,
     BigInt: BigInt,
     Query: {
+        async me(root, args, { token, user }, info) {
+            return {
+                ...user,
+                isLoggedIn: !!user
+            };
+        },
         async allVips(root, args, { token, user }, info) {
             checkAuthentication(token, user, ['super', 'admin']);
             

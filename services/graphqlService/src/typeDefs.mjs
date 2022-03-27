@@ -12,8 +12,9 @@ export const typeDefs = gql`
   }
 
   type User {
-    userId: Int!
-    email: String!
+    isLoggedIn: Boolean
+    userId: Int
+    email: String
     name: String
     roles: [String]
   }
@@ -52,6 +53,7 @@ export const typeDefs = gql`
   }
 
   type Query {
+    me: User
     vip(id: Int!): Vip
     allVips: [Vip!]!
     allPlayers(skip: Int, limit: Int, search: String): PaginatedPlayerData!

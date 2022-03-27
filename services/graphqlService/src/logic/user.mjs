@@ -3,7 +3,7 @@ import { ForbiddenError } from 'apollo-server-core';
 import { ACCESS_TOKEN_NAME, REFRESH_TOKEN_NAME } from '../constants.mjs';
 const { Prisma } = pkg;
 import { hashPassword } from "../integrations/crypto/crypto.mjs";
-import { generateTokenFromEmail, generateTokenFromRefreshToken, generateTokenFromUser } from "../utils/authentication.mjs";
+import { addTokenCookies, clearTokenCookies, generateTokenFromEmail, generateTokenFromRefreshToken, generateTokenFromUser } from "../utils/authentication.mjs";
 import { UserConflictError } from '../utils/errors.mjs';
 import BaseLogic from "./baseLogic.mjs";
 
@@ -58,15 +58,7 @@ export default class User extends BaseLogic {
             .then(result => {
                 this.db.changeUserLoggedInByEmail(email, true);
 
-                reply
-                    .cookie(ACCESS_TOKEN_NAME, result?.accessToken, {
-                        httpOnly: true,
-                        signed: !!process.env.COOKIE_SECRET,
-                    })
-                    .cookie(REFRESH_TOKEN_NAME, result?.refreshToken, {
-                        httpOnly: true,
-                        signed: !!process.env.COOKIE_SECRET,
-                    })
+                addTokenCookies(reply, result?.accessToken, result?.refreshToken);
 
                 return result
             });
@@ -75,9 +67,7 @@ export default class User extends BaseLogic {
     async logout(reply, user) {
         return this.db.changeUserLoggedInById(user?.userId, false)
             .then(result => {
-                reply
-                    .clearCookie(ACCESS_TOKEN_NAME)
-                    .clearCookie(REFRESH_TOKEN_NAME)
+                clearTokenCookies(reply);
 
                 return 'Logged out'
             })
@@ -95,15 +85,7 @@ export default class User extends BaseLogic {
     async tokenSafe(reply, refreshToken) {
         return generateTokenFromRefreshToken(refreshToken)
             .then(result => {
-                reply
-                    .cookie(ACCESS_TOKEN_NAME, result?.accessToken, {
-                        httpOnly: true,
-                        signed: !!process.env.COOKIE_SECRET,
-                    })
-                    .cookie(REFRESH_TOKEN_NAME, result?.refreshToken, {
-                        httpOnly: true,
-                        signed: !!process.env.COOKIE_SECRET,
-                    })
+                addTokenCookies(reply, result?.accessToken, result?.refreshToken);
 
                 return result
             })

@@ -6,7 +6,7 @@ import FastifyCors from 'fastify-cors'
 import { typeDefs } from './typeDefs.mjs';
 import { resolvers } from './resolvers.mjs';
 import 'dotenv/config'
-import { getUser } from './utils/authentication.mjs';
+import { getUser, refreshIfNeeded } from './utils/authentication.mjs';
 import { ACCESS_TOKEN_NAME as ACCESS_TOKEN_NAME, REFRESH_TOKEN_NAME as REFRESH_TOKEN_NAME } from './constants.mjs';
 
 /**
@@ -38,7 +38,7 @@ async function startApolloServer(typeDefs, resolvers) {
     const server = new ApolloServer({
         typeDefs,
         resolvers,
-        context: ({ request, reply }) => {
+        context: async ({ request, reply }) => {
             // To find out the correct arguments for a specific integration,
             // see https://www.apollographql.com/docs/apollo-server/api/apollo-server/#middleware-specific-context-fields
 
@@ -59,6 +59,11 @@ async function startApolloServer(typeDefs, resolvers) {
                     refreshToken = request.unsignCookie(refreshToken);
                     refreshToken = refreshToken?.valid ? refreshToken.value : null;
                 }
+
+                // Check if token needs a refresh
+                if (token && refreshToken) {
+                    ({ token, refreshToken } = await refreshIfNeeded(reply, token, refreshToken));
+                }
             }
             catch (ex) {
                 console.error(ex)
@@ -66,8 +71,8 @@ async function startApolloServer(typeDefs, resolvers) {
 
             // Then try with authorization headers if cookie wasn't being used
             try {
-                token = token ? token : (request.headers[ACCESS_TOKEN_NAME]?.slice(7) || '');
-                refreshToken = refreshToken ? refreshToken : (request.headers[REFRESH_TOKEN_NAME]?.slice(7) || '');
+                token = token ? token : (request.headers[ACCESS_TOKEN_NAME.toLowerCase()]?.slice(7) || '');
+                refreshToken = refreshToken ? refreshToken : (request.headers[REFRESH_TOKEN_NAME.toLowerCase()]?.slice(7) || '');
             }
             catch (ex) {
                 console.error(ex)
@@ -98,7 +103,7 @@ async function startApolloServer(typeDefs, resolvers) {
     app.register(server.createHandler({
         cors: {
             origin: process.env.ALLOWED_ORIGINS?.split(','),
-            credentials: true
+            credentials: true,
         }
     }));
     await app.listen(4000);

@@ -1,7 +1,10 @@
 import { AuthenticationError, ForbiddenError } from 'apollo-server-core';
 import jwt from 'jsonwebtoken'
+const { TokenExpiredError } = jwt;
+import { ACCESS_TOKEN_NAME, REFRESH_TOKEN_NAME } from '../constants.mjs';
 import { matchPassword } from '../integrations/crypto/crypto.mjs';
 import Prisma from '../integrations/prisma/prisma.mjs';
+import { InvalidCredentialsError } from './errors.mjs';
 
 const dbClient = new Prisma()
 
@@ -42,7 +45,7 @@ export async function generateTokenFromRefreshToken(refreshToken) {
 export async function generateTokenFromUserId(userId) {
     const user = await dbClient.getUserById(userId)
 
-    if (!user) return null
+    if (!user) throw new InvalidCredentialsError('Invalid credentials');
 
     return generateToken(user);
 }
@@ -50,7 +53,7 @@ export async function generateTokenFromUserId(userId) {
 export async function generateTokenFromEmail(email, password) {
     const user = await dbClient.getUserByEmail(email)
 
-    if (!user) return null
+    if (!user) throw new InvalidCredentialsError('Invalid credentials');
 
     return generateTokenFromUser(user, password);
 }
@@ -60,7 +63,49 @@ export async function generateTokenFromUser(user, password) {
         return generateToken(user);
     }
 
-    return null
+    throw new InvalidCredentialsError('Invalid credentials');
+}
+
+export function addTokenCookies(reply, accessToken, refreshToken) {
+    reply
+        .cookie(ACCESS_TOKEN_NAME, accessToken, {
+            httpOnly: true,
+            signed: !!process.env.COOKIE_SECRET,
+        })
+        .cookie(REFRESH_TOKEN_NAME, refreshToken, {
+            httpOnly: true,
+            signed: !!process.env.COOKIE_SECRET,
+        })
+}
+
+export function clearTokenCookies(reply) {
+    reply
+        .clearCookie(ACCESS_TOKEN_NAME)
+        .clearCookie(REFRESH_TOKEN_NAME)
+}
+
+export async function refreshIfNeeded(reply, token, refreshToken) {
+    const tokenSecret = process.env.ACCESS_TOKEN_SECRET_KEY;
+
+    try {
+        const verified = jwt.verify(token, tokenSecret);
+        if (verified && (verified.exp > Math.floor(new Date().getTime() / 1000))) {
+            return { token, refreshToken }
+        }
+    } catch (error) {
+        if (!error instanceof TokenExpiredError) {
+            console.error(error);
+        }
+    }
+
+    // Refresh
+    const result = await generateTokenFromRefreshToken(refreshToken);
+    if (result) {
+        addTokenCookies(reply, result?.accessToken, result?.refreshToken);
+        return { token: result.accessToken, refreshToken: result.refreshToken }
+    }
+
+    return { token, refreshToken }
 }
 
 async function generateToken(user) {

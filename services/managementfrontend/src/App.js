@@ -1,13 +1,13 @@
 import './App.css';
-import { Layout, Menu, Row, Typography } from 'antd';
+import { Layout, Menu, Row, Spin, Typography } from 'antd';
 import { DollarOutlined, HomeOutlined, UploadOutlined, UserOutlined, VideoCameraOutlined } from '@ant-design/icons';
 import {
   BrowserRouter as Router,
-  Switch,
   Routes,
   Route,
   Link,
-  useLocation
+  useLocation,
+  Navigate
 } from "react-router-dom";
 import { VipsManagementView } from './views/vipsManagementView';
 import { HomeView } from './views/homeView';
@@ -15,6 +15,8 @@ import { PlayersView } from './views/playersView';
 import { LoginView } from './views/loginView';
 import { PrivateOutlet } from './utilities/privateOutlet';
 import { LogoutComponent } from './components/logoutComponent';
+import { useQuery } from '@apollo/client';
+import { GET_ME } from './graphql/queries';
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -27,8 +29,24 @@ function App() {
 }
 
 function BaseLayout() {
+  // const { loading, error, data } = useQuery(GET_ME, {
+  //   fetchPolicy: 'network-only',
+  // });
   const location = useLocation();
   const isLoginPage = location?.pathname?.toLowerCase() === '/login';
+
+  // if (loading) {
+  //   return <Spin />
+  // }
+
+  // if (isLoginPage && data?.me?.isLoggedIn) {
+  //   if (location.state?.from) {
+  //     return <Navigate to={location.state.from} />
+  //   }
+  //   else {
+  //     return <Navigate to='/' />
+  //   }
+  // }
 
   if (isLoginPage) {
     return (<Layout style={{ height: "100vh" }}>
@@ -63,16 +81,16 @@ function BaseLayout() {
           alignItems: 'center',
           justifyContent: 'center',
         }}><Typography.Title style={{ fontSize: '24px' }}>BattleManager</Typography.Title></Header>
-        <Menu theme="dark" mode="inline" defaultSelectedKeys={['4']}>
-          <Menu.Item key="1" icon={<HomeOutlined />}>
+        <Menu theme="dark" mode="inline" defaultSelectedKeys={[location.pathname]}>
+          <Menu.Item key="/" icon={<HomeOutlined />}>
             <span>Home</span>
             <Link to="/" />
           </Menu.Item>
-          <Menu.Item key="2" icon={<DollarOutlined />}>
+          <Menu.Item key="/vips" icon={<DollarOutlined />}>
             <span>Vips</span>
             <Link to="/vips" />
           </Menu.Item>
-          <Menu.Item key="3" icon={<UserOutlined />}>
+          <Menu.Item key="/players" icon={<UserOutlined />}>
             <span>Players</span>
             <Link to="/players" />
           </Menu.Item>
