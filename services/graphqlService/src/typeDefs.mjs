@@ -4,6 +4,20 @@ export const typeDefs = gql`
   scalar BigInt
   scalar Timestamp
 
+  type Token {
+    accessToken: String
+    accessTokenLife: Int
+    refreshToken: String
+    refreshTokenLife: Int
+  }
+
+  type User {
+    userId: Int!
+    email: String!
+    name: String
+    roles: [String]
+  }
+
   type Vip {
     ID: Int!
     gametype: String!
@@ -44,6 +58,12 @@ export const typeDefs = gql`
   }
 
   type Mutation {
+    createUser(email: String!, password: String!, name: String): Token
+    login(email: String!, password: String!): Token
+    loginSafe(email: String!, password: String!): User
+    logout: String
+    token(refreshToken: String!): Token
+    tokenSafe: User
     createVip(name: String!, email: String!, password: String!): Vip!
   }
 `;

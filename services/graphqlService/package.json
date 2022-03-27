@@ -16,7 +16,10 @@
     "apollo-server-fastify": "^3.6.6",
     "dotenv": "^16.0.0",
     "fastify": "^3.27.4",
-    "graphql": "^16.3.0"
+    "fastify-cookie": "^5.6.0",
+    "fastify-cors": "^6.0.3",
+    "graphql": "^16.3.0",
+    "jsonwebtoken": "^8.5.1"
   },
   "devDependencies": {
     "nodemon": "^2.0.15",

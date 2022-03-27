@@ -29,7 +29,7 @@ export function PlayersTable() {
     };
 
     useEffect(() => {
-        fetchPlayers();
+        fetchPlayers(tableConfig.current, tableConfig.pageSize);
     }, [])
 
     const fetchPlayers = (page, size, filters) => {

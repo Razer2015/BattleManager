@@ -3,6 +3,60 @@ const { PrismaClient } = pkg;
 const prisma = new PrismaClient()
 
 export default class Prisma {
+    async createUser(user) {
+        return await prisma.battlemanager_users.create({ data: user })
+    }
+
+    async getUserById(userId) {
+        return await prisma.battlemanager_users.findUnique({
+            where: {
+                id: userId,
+            },
+        })
+    }
+
+    async getUserByEmail(email) {
+        return await prisma.battlemanager_users.findFirst({
+            where: {
+                email: email,
+            },
+        })
+    }
+
+    async changeUserLoggedInById(userId, isLoggedIn) {
+        return await prisma.battlemanager_users.update({
+            where: {
+                id: userId,
+            },
+            data: {
+                is_logged_in: isLoggedIn,
+            }
+        })
+    }
+
+
+    async changeUserLoggedInByEmail(email, isLoggedIn) {
+        return await prisma.battlemanager_users.update({
+            where: {
+                email_normalized: email.toUpperCase(),
+            },
+            data: {
+                is_logged_in: isLoggedIn,
+            }
+        })
+    }
+
+    async getUserRoles(userId) {
+        return await prisma.battlemanager_userroles.findMany({
+            where: {
+                userId: userId,
+            },
+            include: {
+                battlemanager_roles: true,
+            }
+        })
+    }
+
     async getAllVips() {
         const allVips = await prisma.vsm_vips.findMany()
         return allVips

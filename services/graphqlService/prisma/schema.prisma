@@ -827,6 +827,36 @@ model vsm_vips {
   @@unique([servergroup, playername, gametype], map: "servergroup")
 }
 
+model battlemanager_users {
+  id                      Int                       @id @default(autoincrement())
+  email                   String                    @db.VarChar(50)
+  email_normalized        String                    @unique(map: "email_unique") @db.VarChar(50)
+  name                    String?                   @db.VarChar(50)
+  password                String                    @db.VarChar(255)
+  is_logged_in            Boolean?                  @db.Bit(1)
+  locked                  Boolean?                  @db.Bit(1)
+  created_at              DateTime?                 @db.Timestamp(0)
+  updated_at              DateTime?                 @db.Timestamp(0)
+  battlemanager_userroles battlemanager_userroles[]
+}
+
+model battlemanager_roles {
+  id                      Int                       @id @default(autoincrement())
+  name                    String                    @unique(map: "unique") @default("") @db.VarChar(50)
+  description             String?                   @db.VarChar(50)
+  battlemanager_userroles battlemanager_userroles[]
+}
+
+model battlemanager_userroles {
+  roleId              Int
+  userId              Int
+  battlemanager_roles battlemanager_roles @relation(fields: [roleId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_userrole_role")
+  battlemanager_users battlemanager_users @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_userrole_user")
+
+  @@id([roleId, userId])
+  @@index([userId], map: "FK_userrole_user")
+}
+
 enum adkats_bans_ban_status {
   Active
   Expired

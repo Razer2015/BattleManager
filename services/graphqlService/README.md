@@ -4,9 +4,17 @@
 
 1. Create `.env` file at the root and add the following environment variables
 
-| Name            | Example value                                             |
-|-----------------|-----------------------------------------------------------|
-| DATABASE_URL    | mysql://username:password@127.0.0.1:3306/battlemanager_db |
+| Name                      | Example value                                             |
+|---------------------------|-----------------------------------------------------------|
+| DATABASE_URL              | mysql://username:password@127.0.0.1:3306/battlemanager_db |
+| ALLOWED_ORIGINS           | http://localhost:3000                                     |
+| APP_KEY                   | battlemanager-development                                 |
+| COOKIE_SECRET             | battlemanager-development                                 |
+| ACCESS_TOKEN_SECRET_KEY   | battlemanager-development                                 |
+| ACCESS_TOKEN_LIFE         | 900                                                       |
+| REFRESH_TOKEN_SECRET_KEY  | battlemanager-development                                 |
+| REFRESH_TOKEN_LIFE        | 86400                                                     |
+|---------------------------|-----------------------------------------------------------|
 
 <hr>
 
@@ -21,7 +29,7 @@ The typical workflow for projects that are not using Prisma Migrate, but instead
 
 Change the database schema (e.g. using plain SQL)
 1. Run `npx prisma db pull` to update the Prisma schema
-2. Run `npm prisma generate` to update Prisma Client
+2. Run `npx prisma generate` to update Prisma Client
 3. Use the updated Prisma Client in your application
 
 ### Querying
