@@ -7,9 +7,6 @@ export function PrivateOutlet() {
     const { isAuthenticated, isLoading } = useContext(AuthContext);
     const location = useLocation();
 
-    console.log("isLoading", isLoading);
-    console.log("isAuthenticated", isAuthenticated);
-
     return !isLoading
         ?
         (
