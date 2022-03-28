@@ -17,6 +17,13 @@ export const typeDefs = gql`
     email: String
     name: String
     roles: [String]
+    userRoles: [Role]
+  }
+
+  type Role {
+    id: Int!
+    name: String
+    description: String
   }
 
   type Vip {
@@ -52,11 +59,17 @@ export const typeDefs = gql`
     data: [PlayerData!]
   }
 
+  type PaginatedUserData {
+    count: Int!
+    data: [User!]
+  }
+
   type Query {
     me: User
     vip(id: Int!): Vip
     allVips: [Vip!]!
     allPlayers(skip: Int, limit: Int, search: String): PaginatedPlayerData!
+    allUsers(skip: Int, limit: Int, search: String): PaginatedUserData!
   }
 
   type Mutation {

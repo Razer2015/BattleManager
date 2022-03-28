@@ -1,5 +1,6 @@
 import Prisma from "./integrations/prisma/prisma.mjs";
 import Player from "./logic/player.mjs";
+import Role from "./logic/role.mjs";
 import User from "./logic/user.mjs";
 import Vip from "./logic/vip.mjs";
 import { Timestamp, BigInt } from "./scalarTypes.mjs";
@@ -10,6 +11,11 @@ const dbClient = new Prisma()
 export const resolvers = {
     Timestamp: Timestamp,
     BigInt: BigInt,
+    User: {
+        async userRoles(root, args, { token, user }, info) {
+            return new Role(dbClient).getUserRoles(args);
+        },
+    },
     Query: {
         async me(root, args, { token, user }, info) {
             return {
@@ -26,6 +32,11 @@ export const resolvers = {
             checkAuthentication(token, user, ['super', 'admin']);
 
             return new Player(dbClient).getPlayers(args);
+        },
+        async allUsers(root, args, { token, user }, info) {
+            checkAuthentication(token, user, ['super']);
+
+            return new User(dbClient).getUsers(args);
         },
     },
     Mutation: {

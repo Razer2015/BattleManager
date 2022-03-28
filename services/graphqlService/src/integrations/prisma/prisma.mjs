@@ -23,6 +23,66 @@ export default class Prisma {
         })
     }
 
+    async getAllUsersCount({ search }) {
+        if (!search) return await prisma.battlemanager_users.count()
+
+        return await prisma.battlemanager_users.count({
+            where: {
+                OR: [
+                    {
+                        email: {
+                            contains: search,
+                        }
+                    },
+                    {
+                        name: {
+                            contains: search,
+                        }
+                    }
+                ]
+            }
+        })
+    }
+
+    async getAllUsers({ skip, limit, search }) {
+        if (!skip) skip = 0
+        if (!limit) limit = 20
+
+        const args = {}
+        if (search) {
+            args.where = {
+                OR: [
+                    {
+                        email: {
+                            contains: search,
+                        }
+                    },
+                    {
+                        name: {
+                            contains: search,
+                        }
+                    }
+                ]
+            }
+        }
+        args.orderBy = [
+            {
+                name: 'asc',
+            }
+        ]
+        // args.include = {
+        //     battlemanager_userroles: {
+        //         include: {
+        //             battlemanager_roles: true
+        //         }
+        //     },
+        // }
+        args.skip = skip
+        args.take = limit
+        const users = await prisma.battlemanager_users.findMany(args)
+        return users
+    }
+
     async changeUserLoggedInById(userId, signedIn) {
         return await prisma.battlemanager_users.update({
             where: {

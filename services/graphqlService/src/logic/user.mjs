@@ -45,6 +45,24 @@ export default class User extends BaseLogic {
             });
     }
 
+    async getUsers(args) {
+        return {
+            count: this.db.getAllUsersCount(args),
+            data: this.db.getAllUsers(args)
+                .then(data => {
+                    if (!data || !data.length) return []
+
+                    return data.map(user => {
+                        return {
+                            userId: user?.id,
+                            signedIn: user?.is_logged_in,
+                            ...user
+                        };
+                    });
+                })
+        };
+    }
+
     async login({ email, password }) {
         return generateTokenFromEmail(email, password)
             .then(result => {

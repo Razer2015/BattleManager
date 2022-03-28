@@ -15,6 +15,7 @@ import { LoginView } from './views/loginView';
 import { PrivateOutlet } from './utilities/privateOutlet';
 import { LogoutComponent } from './components/logoutComponent';
 import Auth from './components/authComponent';
+import { UsersView } from './views/usersView';
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -76,6 +77,10 @@ function BaseLayout() {
             <span>Players</span>
             <Link to="/players" />
           </Menu.Item>
+          <Menu.Item key="/users" icon={<UserOutlined />}>
+            <span>Users</span>
+            <Link to="/users" />
+          </Menu.Item>
         </Menu>
       </Sider>
       <Layout>
@@ -88,6 +93,7 @@ function BaseLayout() {
               <Route path="/" element={<HomeView />} />
               <Route path="/vips" element={<VipsManagementView />} />
               <Route path="/players" element={<PlayersView />} />
+              <Route path="/users" element={<UsersView />} />
             </Route>
           </Routes>
         </Content>
