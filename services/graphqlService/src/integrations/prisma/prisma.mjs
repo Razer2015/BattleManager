@@ -23,25 +23,25 @@ export default class Prisma {
         })
     }
 
-    async changeUserLoggedInById(userId, isLoggedIn) {
+    async changeUserLoggedInById(userId, signedIn) {
         return await prisma.battlemanager_users.update({
             where: {
                 id: userId,
             },
             data: {
-                is_logged_in: isLoggedIn,
+                is_logged_in: signedIn,
             }
         })
     }
 
 
-    async changeUserLoggedInByEmail(email, isLoggedIn) {
+    async changeUserLoggedInByEmail(email, signedIn) {
         return await prisma.battlemanager_users.update({
             where: {
                 email_normalized: email.toUpperCase(),
             },
             data: {
-                is_logged_in: isLoggedIn,
+                is_logged_in: signedIn,
             }
         })
     }

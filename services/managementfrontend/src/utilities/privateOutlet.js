@@ -1,33 +1,25 @@
-import { useQuery } from "@apollo/client";
 import { Spin } from "antd";
+import { useContext } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { GET_ME } from "../graphql/queries";
-import { deleteTokens, getTokens, saveTokens } from "./tokens";
-
-const useAuth = () => {
-    const { loading, error, data } = useQuery(GET_ME, {
-        fetchPolicy: 'network-only',
-        pollInterval: 10 * 1000,
-    });
-
-    if (!loading && data?.me?.isLoggedIn) {
-        saveTokens(data?.me);
-    }
-
-    return { loading, isAuth: data?.me?.isLoggedIn };
-};
+import { AuthContext } from "../components/authComponent";
 
 export function PrivateOutlet() {
+    const { isAuthenticated, isLoading } = useContext(AuthContext);
     const location = useLocation();
-    const { loading, isAuth } = useAuth();
 
-    if (loading) {
-        return <Spin />
-    }
+    console.log("isLoading", isLoading);
+    console.log("isAuthenticated", isAuthenticated);
 
-    return isAuth ? (
-        <Outlet />
-    ) : (
-        <Navigate to="/login" replace state={{ from: location }} />
-    );
+    return !isLoading
+        ?
+        (
+            isAuthenticated ? (
+                <Outlet />
+            ) : (
+                <Navigate to="/login" replace state={{ from: location }} />
+            )
+        )
+        :
+        <Spin />
+        ;
 }

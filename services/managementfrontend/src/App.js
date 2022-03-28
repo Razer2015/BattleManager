@@ -1,13 +1,12 @@
 import './App.css';
-import { Layout, Menu, Row, Spin, Typography } from 'antd';
-import { DollarOutlined, HomeOutlined, UploadOutlined, UserOutlined, VideoCameraOutlined } from '@ant-design/icons';
+import { Layout, Menu, Typography } from 'antd';
+import { DollarOutlined, HomeOutlined, UserOutlined } from '@ant-design/icons';
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Link,
   useLocation,
-  Navigate
 } from "react-router-dom";
 import { VipsManagementView } from './views/vipsManagementView';
 import { HomeView } from './views/homeView';
@@ -15,52 +14,35 @@ import { PlayersView } from './views/playersView';
 import { LoginView } from './views/loginView';
 import { PrivateOutlet } from './utilities/privateOutlet';
 import { LogoutComponent } from './components/logoutComponent';
-import { useQuery } from '@apollo/client';
-import { GET_ME } from './graphql/queries';
+import Auth from './components/authComponent';
 
 const { Header, Content, Footer, Sider } = Layout;
 
 function App() {
   return (
     <Router>
-      <BaseLayout></BaseLayout>
+      <Auth>
+        <BaseLayout />
+      </Auth>
     </Router>
   );
 }
 
 function BaseLayout() {
-  // const { loading, error, data } = useQuery(GET_ME, {
-  //   fetchPolicy: 'network-only',
-  // });
   const location = useLocation();
   const isLoginPage = location?.pathname?.toLowerCase() === '/login';
 
-  // if (loading) {
-  //   return <Spin />
-  // }
-
-  // if (isLoginPage && data?.me?.isLoggedIn) {
-  //   if (location.state?.from) {
-  //     return <Navigate to={location.state.from} />
-  //   }
-  //   else {
-  //     return <Navigate to='/' />
-  //   }
-  // }
-
   if (isLoginPage) {
     return (<Layout style={{ height: "100vh" }}>
-      <Layout>
-        <Header className="site-layout-sub-header-background" style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}><Typography.Title style={{ fontSize: '24px' }}>BattleManager</Typography.Title></Header>
-        <Content>
-          <LoginView />
-        </Content>
-        <Footer style={{ textAlign: 'center' }}>BattleManager ©2022 Created by xfileFIN</Footer>
-      </Layout>
+      <Header className="site-layout-sub-header-background" style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}><Typography.Title style={{ fontSize: '24px' }}>BattleManager</Typography.Title></Header>
+      <Content>
+        <LoginView />
+      </Content>
+      <Footer style={{ textAlign: 'center' }}>BattleManager ©2022 Created by xfileFIN</Footer>
     </Layout>)
   }
 

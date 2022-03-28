@@ -14,7 +14,7 @@ export const resolvers = {
         async me(root, args, { token, user }, info) {
             return {
                 ...user,
-                isLoggedIn: !!user
+                signedIn: !!user
             };
         },
         async allVips(root, args, { token, user }, info) {

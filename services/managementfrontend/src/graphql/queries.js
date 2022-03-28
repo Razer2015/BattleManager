@@ -42,7 +42,7 @@ export const GET_ALL_PLAYERS = gql`
 export const GET_ME = gql`
   query Me {
     me {
-      isLoggedIn
+      signedIn
       userId
       email
       name

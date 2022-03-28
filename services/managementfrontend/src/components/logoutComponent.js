@@ -1,30 +1,16 @@
-import { useMutation } from "@apollo/client";
 import { Button, Form } from "antd";
-import { useLocation, useNavigate } from "react-router-dom";
-import { LOGOUT } from "../graphql/mutations";
-import { deleteTokens } from "../utilities/tokens";
+import { useContext } from "react";
+import { AuthContext } from "./authComponent";
 
 export function LogoutComponent() {
-    const [logout, { data }] = useMutation(LOGOUT);
-    const navigate = useNavigate();
-    const location = useLocation();
-
-    async function submitLogout(values) {
-        const { loading, error, data } = await logout();
-
-        if (data && data.logout) {
-            deleteTokens();
-
-            navigate('/login');
-        }
-    };
+    const { logout } = useContext(AuthContext);
 
     return (
         <Form
             name="normal_logout"
             className="login-form"
             initialValues={{ remember: true }}
-            onFinish={submitLogout}
+            onFinish={logout}
             style={{ minWidth: '368px' }}
         >
             <Form.Item>

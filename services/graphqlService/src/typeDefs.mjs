@@ -12,7 +12,7 @@ export const typeDefs = gql`
   }
 
   type User {
-    isLoggedIn: Boolean
+    signedIn: Boolean
     userId: Int
     email: String
     name: String
