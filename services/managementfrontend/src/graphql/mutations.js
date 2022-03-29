@@ -1,12 +1,12 @@
 const { gql } = require('@apollo/client');
 
 export const CREATE_USER = gql`
-  mutation CreateUser($email: String!, $password: String!) {
-    createUser(email: $email, password: $password) {
-      accessToken
-      accessTokenLife
-      refreshToken
-      refreshTokenLife
+  mutation CreateUser($user: UserInput!) {
+    createUser(user: $user) {
+      userId
+      email
+      name
+      roles
     }
   }
 `;

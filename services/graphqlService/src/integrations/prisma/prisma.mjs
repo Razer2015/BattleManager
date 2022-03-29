@@ -23,27 +23,6 @@ export default class Prisma {
         })
     }
 
-    async getAllUsersCount({ search }) {
-        if (!search) return await prisma.battlemanager_users.count()
-
-        return await prisma.battlemanager_users.count({
-            where: {
-                OR: [
-                    {
-                        email: {
-                            contains: search,
-                        }
-                    },
-                    {
-                        name: {
-                            contains: search,
-                        }
-                    }
-                ]
-            }
-        })
-    }
-
     async getAllUsers({ skip, limit, search }) {
         if (!skip) skip = 0
         if (!limit) limit = 20
@@ -65,6 +44,8 @@ export default class Prisma {
                 ]
             }
         }
+        const searchArgs = JSON.parse(JSON.stringify(args));
+
         args.orderBy = [
             {
                 name: 'asc',
@@ -79,8 +60,11 @@ export default class Prisma {
         // }
         args.skip = skip
         args.take = limit
-        const users = await prisma.battlemanager_users.findMany(args)
-        return users
+
+        return await prisma.$transaction([
+            prisma.battlemanager_users.findMany(args),
+            prisma.battlemanager_users.count(searchArgs),
+        ])
     }
 
     async changeUserLoggedInById(userId, signedIn) {
@@ -107,6 +91,7 @@ export default class Prisma {
     }
 
     async getUserRoles(userId) {
+        if (!userId) return [];
         return await prisma.battlemanager_userroles.findMany({
             where: {
                 userId: userId,
@@ -115,6 +100,15 @@ export default class Prisma {
                 battlemanager_roles: true,
             }
         })
+    }
+
+    async upsertUserRoles(userId, roles) {
+        return await prisma.$transaction([
+            prisma.battlemanager_userroles.deleteMany({ where: { userId: userId } }),
+            prisma.battlemanager_userroles.createMany({
+                data: roles
+            }),
+        ]);
     }
 
     async getAllVips() {

@@ -13,7 +13,7 @@ export const resolvers = {
     BigInt: BigInt,
     User: {
         async userRoles(root, args, { token, user }, info) {
-            return new Role(dbClient).getUserRoles(args);
+            return new Role(dbClient).getUserRoles(root);
         },
     },
     Query: {
@@ -41,7 +41,7 @@ export const resolvers = {
     },
     Mutation: {
         async createUser(root, args, { token, user }, info) {
-            return new User(dbClient).createUser(args);
+            return new User(dbClient).createUser(args?.user);
         },
         async login(root, args, { token, user }, info) {
             return new User(dbClient).login(args);

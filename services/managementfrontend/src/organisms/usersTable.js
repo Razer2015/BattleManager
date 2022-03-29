@@ -1,6 +1,6 @@
-import { UserAddOutlined } from '@ant-design/icons';
+import { ReloadOutlined, UserAddOutlined } from '@ant-design/icons';
 import { useLazyQuery } from '@apollo/client';
-import { Button, Table } from 'antd';
+import { Button, Col, Row, Table, Tooltip } from 'antd';
 import { useEffect, useState } from 'react';
 import { GET_ALL_USERS } from '../graphql/queries';
 import { renderLastOnline } from '../molecules/lastOnline';
@@ -8,6 +8,7 @@ import { renderLoggedIn } from '../molecules/loggedIn';
 import { renderRoles } from '../molecules/roles';
 import { renderSoldierNameWithTag } from '../molecules/soldierNameWithTag';
 import columnSearchProps from '../utilities/columnSearchProps';
+import { CreateUserModal } from './forms/createUserForm';
 
 export function UsersTable() {
     const [tableSearch, setTableSearch] = useState({ searchText: '', searchedColumn: '' });
@@ -73,20 +74,17 @@ export function UsersTable() {
         },
     ];
 
-    const addUser = () => {
-        alert("TODO: Add userr");
-    };
-
     return <>
-        <Button
-            onClick={addUser}
-            type="primary"
-            style={{
-                marginBottom: 16,
-            }}
-        >
-            <UserAddOutlined />Add user
-        </Button>
+        <Row>
+            <Col span={10}>
+                <CreateUserModal />
+            </Col>
+            <Col span={2} offset={12} style={{ textAlign: 'right' }}>
+                <Tooltip title={'Update list'}>
+                    <Button type="primary" icon={<ReloadOutlined />} loading={loading} onClick={() => getUsers()} />
+                </Tooltip>
+            </Col>
+        </Row>
         <Table
             rowKey={'userId'}
             loading={loading}
@@ -97,7 +95,7 @@ export function UsersTable() {
                 showSizeChanger: false,
                 total: usersData?.allUsers?.count,
                 ...tableConfig,
-                position: ['topRight', 'bottomRight'],
+                position: [/*'topRight', */'bottomRight'],
             }}
         />
     </>

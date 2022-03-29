@@ -12,7 +12,7 @@ export default class User extends BaseLogic {
         super(...args)
     }
 
-    async createUser({ email, password }) {
+    async createUser({ name, email, password, roles }) {
         const user = await this.db.createUser({
             email: email,
             email_normalized: email.toUpperCase(),
@@ -22,6 +22,11 @@ export default class User extends BaseLogic {
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
         })
+            .then(user => {
+                return this.db.upsertUserRoles(user.id, roles.map(roleId => {
+                    return { roleId, userId: user.id };
+                }));
+            })
             .catch(e => {
                 if (e instanceof Prisma.PrismaClientKnownRequestError) {
                     if (e.code === 'P2002') {
@@ -38,28 +43,26 @@ export default class User extends BaseLogic {
 
         if (!user) throw new Error('Failed to create user');
 
-        return generateTokenFromUser(user, password)
-            .then(result => {
-                this.db.changeUserLoggedInById(user.id, true);
-                return result;
-            });
+        return user;
+
+        // return generateTokenFromUser(user, password)
+        //     .then(result => {
+        //         this.db.changeUserLoggedInById(user.id, true);
+        //         return result;
+        //     });
     }
 
     async getUsers(args) {
+        const [users, usersCount] = await this.db.getAllUsers(args);
         return {
-            count: this.db.getAllUsersCount(args),
-            data: this.db.getAllUsers(args)
-                .then(data => {
-                    if (!data || !data.length) return []
-
-                    return data.map(user => {
-                        return {
-                            userId: user?.id,
-                            signedIn: user?.is_logged_in,
-                            ...user
-                        };
-                    });
-                })
+            count: usersCount,
+            data: users.map(user => {
+                return {
+                    userId: user?.id,
+                    signedIn: user?.is_logged_in,
+                    ...user
+                };
+            })
         };
     }
 

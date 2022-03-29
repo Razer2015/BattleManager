@@ -72,8 +72,15 @@ export const typeDefs = gql`
     allUsers(skip: Int, limit: Int, search: String): PaginatedUserData!
   }
 
+  input UserInput {
+    name: String
+    email: String!
+    password: String!
+    roles: [Int!]!
+  }
+
   type Mutation {
-    createUser(email: String!, password: String!, name: String): Token
+    createUser(user: UserInput!): User
     login(email: String!, password: String!): Token
     loginSafe(email: String!, password: String!): User
     logout: String
