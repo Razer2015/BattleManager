@@ -7,6 +7,23 @@ export default class Prisma {
         return await prisma.battlemanager_users.create({ data: user })
     }
 
+    async updateUser(userId, user) {
+        return await prisma.battlemanager_users.update({
+            where: {
+                id: userId,
+            },
+            data: user
+        })
+    }
+
+    async deleteUser(userId) {
+        return await prisma.battlemanager_users.delete({
+            where: {
+                id: userId,
+            }
+        })
+    }
+
     async getUserById(userId) {
         return await prisma.battlemanager_users.findUnique({
             where: {

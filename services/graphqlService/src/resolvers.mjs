@@ -23,9 +23,14 @@ export const resolvers = {
                 signedIn: !!user
             };
         },
+        async getUser(root, args, { token, user }, info) {
+            checkAuthentication(token, user, ['super']);
+
+            return new User(dbClient).getUser(args);
+        },
         async allVips(root, args, { token, user }, info) {
             checkAuthentication(token, user, ['super', 'admin']);
-            
+
             return new Vip(dbClient).getVips();
         },
         async allPlayers(root, args, { token, user }, info) {
@@ -41,7 +46,21 @@ export const resolvers = {
     },
     Mutation: {
         async createUser(root, args, { token, user }, info) {
+            checkAuthentication(token, user, ['super']);
+
             return new User(dbClient).createUser(args?.user);
+        },
+        async updateUser(root, args, { token, user }, info) {
+            checkAuthentication(token, user, ['super']);
+
+            console.log(args?.user);
+
+            return new User(dbClient).updateUser(args?.userId, args?.user);
+        },
+        async deleteUser(root, args, { token, user }, info) {
+            checkAuthentication(token, user, ['super']);
+
+            return new User(dbClient).deleteUser(args);
         },
         async login(root, args, { token, user }, info) {
             return new User(dbClient).login(args);

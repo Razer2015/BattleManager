@@ -1,14 +1,15 @@
-import { ReloadOutlined, UserAddOutlined } from '@ant-design/icons';
-import { useLazyQuery } from '@apollo/client';
-import { Button, Col, Row, Table, Tooltip } from 'antd';
+import { ReloadOutlined, } from '@ant-design/icons';
+import { useLazyQuery, useMutation } from '@apollo/client';
+import { getOperationName } from '@apollo/client/utilities';
+import { Button, Col, Popconfirm, Row, Table, Tooltip } from 'antd';
 import { useEffect, useState } from 'react';
+import { DELETE_USER } from '../graphql/mutations';
 import { GET_ALL_USERS } from '../graphql/queries';
-import { renderLastOnline } from '../molecules/lastOnline';
 import { renderLoggedIn } from '../molecules/loggedIn';
 import { renderRoles } from '../molecules/roles';
-import { renderSoldierNameWithTag } from '../molecules/soldierNameWithTag';
 import columnSearchProps from '../utilities/columnSearchProps';
-import { CreateUserModal } from './forms/createUserForm';
+import { notificationWithIcon } from '../utilities/notification';
+import { UserModal } from './forms/userForm';
 
 export function UsersTable() {
     const [tableSearch, setTableSearch] = useState({ searchText: '', searchedColumn: '' });
@@ -19,6 +20,16 @@ export function UsersTable() {
             limit: tableConfig.pageSize,
             skip: (tableConfig.current - 1) * tableConfig.pageSize,
         },
+    });
+
+    const [deleteUser] = useMutation(DELETE_USER, {
+        onCompleted: (data) => {
+            notificationWithIcon('success', 'User deleted successfully.');
+        },
+        onError: (error) => {
+            notificationWithIcon('error', error.message);
+        },
+        refetchQueries: [getOperationName(GET_ALL_USERS)]
     });
 
     const handleTableChange = (pagination, filters, sorter) => {
@@ -34,6 +45,7 @@ export function UsersTable() {
 
     useEffect(() => {
         fetchUsers(tableConfig.current, tableConfig.pageSize);
+        // eslint-disable-next-line
     }, [])
 
     const fetchUsers = (page, size, filters) => {
@@ -44,6 +56,14 @@ export function UsersTable() {
                 limit: size,
                 skip: (page - 1) * size,
                 search,
+            },
+        });
+    }
+
+    const handleDelete = (userId) => {
+        deleteUser({
+            variables: {
+                userId: userId,
             },
         });
     }
@@ -72,12 +92,25 @@ export function UsersTable() {
             key: 'is_logged_in',
             render: (timestamp, row) => renderLoggedIn(row)
         },
+        {
+            title: 'Actions',
+            dataIndex: 'action',
+            render: (_, record) =>
+                <>
+                    <UserModal id={record.userId} />
+                    <Popconfirm title="Are you sure you want to delete?" onConfirm={() => handleDelete(record.userId)}>
+                        <Button danger>
+                            Delete
+                        </Button>
+                    </Popconfirm>
+                </>
+        },
     ];
 
     return <>
         <Row>
             <Col span={10}>
-                <CreateUserModal />
+                <UserModal />
             </Col>
             <Col span={2} offset={12} style={{ textAlign: 'right' }}>
                 <Tooltip title={'Update list'}>

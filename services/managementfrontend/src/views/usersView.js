@@ -10,7 +10,7 @@ export function UsersView() {
             <PageHeader
                 className="site-page-header"
                 title="Users"
-                subTitle=""
+                subTitle="Here you can manager the BattleManager users."
             >
                 <UsersTable style={{ padding: '16px 24px' }} />
             </PageHeader>

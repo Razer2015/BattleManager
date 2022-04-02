@@ -70,3 +70,20 @@ export const GET_ME = gql`
     }
   }
 `
+
+export const GET_USER = gql`
+  query GetUser($userId: Int!) {
+    getUser(userId: $userId) {
+      signedIn
+      userId
+      email
+      name
+      roles
+      userRoles {
+        description
+        name
+        id
+      }
+    }
+  }
+`

@@ -14,8 +14,9 @@ import { PlayersView } from './views/playersView';
 import { LoginView } from './views/loginView';
 import { PrivateOutlet } from './utilities/privateOutlet';
 import { LogoutComponent } from './components/logoutComponent';
-import Auth from './components/authComponent';
+import Auth, { AuthContext } from './components/authComponent';
 import { UsersView } from './views/usersView';
+import { useContext } from 'react';
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -32,6 +33,7 @@ function App() {
 function BaseLayout() {
   const location = useLocation();
   const isLoginPage = location?.pathname?.toLowerCase() === '/login';
+  const { hasRole } = useContext(AuthContext);
 
   if (isLoginPage) {
     return (<Layout style={{ height: "100vh" }}>
@@ -77,10 +79,12 @@ function BaseLayout() {
             <span>Players</span>
             <Link to="/players" />
           </Menu.Item>
-          <Menu.Item key="/users" icon={<UserOutlined />}>
-            <span>Users</span>
-            <Link to="/users" />
-          </Menu.Item>
+          {hasRole('super') && (
+            <Menu.Item key="/users" icon={<UserOutlined />}>
+              <span>Users</span>
+              <Link to="/users" />
+            </Menu.Item>
+          )}
         </Menu>
       </Sider>
       <Layout>
@@ -93,7 +97,9 @@ function BaseLayout() {
               <Route path="/" element={<HomeView />} />
               <Route path="/vips" element={<VipsManagementView />} />
               <Route path="/players" element={<PlayersView />} />
-              <Route path="/users" element={<UsersView />} />
+              {hasRole('super') && (
+                <Route path="/users" element={<UsersView />} />
+              )}
             </Route>
           </Routes>
         </Content>
