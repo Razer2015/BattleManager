@@ -17,6 +17,7 @@ import { LogoutComponent } from './components/logoutComponent';
 import Auth, { AuthContext } from './components/authComponent';
 import { UsersView } from './views/usersView';
 import { useContext } from 'react';
+import { NotFound } from './views/notFoundView';
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -100,6 +101,7 @@ function BaseLayout() {
               {hasRole('super') && (
                 <Route path="/users" element={<UsersView />} />
               )}
+              <Route path='*' element={<NotFound />} />
             </Route>
           </Routes>
         </Content>
