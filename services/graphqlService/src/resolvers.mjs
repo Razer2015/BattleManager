@@ -1,5 +1,6 @@
 import Prisma from "./integrations/prisma/prisma.mjs";
 import Player from "./logic/player.mjs";
+import Role from "./logic/role.mjs";
 import User from "./logic/user.mjs";
 import Vip from "./logic/vip.mjs";
 import { Timestamp, BigInt } from "./scalarTypes.mjs";
@@ -10,6 +11,11 @@ const dbClient = new Prisma()
 export const resolvers = {
     Timestamp: Timestamp,
     BigInt: BigInt,
+    User: {
+        async userRoles(root, args, { token, user }, info) {
+            return new Role(dbClient).getUserRoles(root);
+        },
+    },
     Query: {
         async me(root, args, { token, user }, info) {
             return {
@@ -17,9 +23,14 @@ export const resolvers = {
                 signedIn: !!user
             };
         },
+        async getUser(root, args, { token, user }, info) {
+            checkAuthentication(token, user, ['super']);
+
+            return new User(dbClient).getUser(args);
+        },
         async allVips(root, args, { token, user }, info) {
             checkAuthentication(token, user, ['super', 'admin']);
-            
+
             return new Vip(dbClient).getVips();
         },
         async allPlayers(root, args, { token, user }, info) {
@@ -27,10 +38,29 @@ export const resolvers = {
 
             return new Player(dbClient).getPlayers(args);
         },
+        async allUsers(root, args, { token, user }, info) {
+            checkAuthentication(token, user, ['super']);
+
+            return new User(dbClient).getUsers(args);
+        },
     },
     Mutation: {
         async createUser(root, args, { token, user }, info) {
-            return new User(dbClient).createUser(args);
+            checkAuthentication(token, user, ['super']);
+
+            return new User(dbClient).createUser(args?.user);
+        },
+        async updateUser(root, args, { token, user }, info) {
+            checkAuthentication(token, user, ['super']);
+
+            console.log(args?.user);
+
+            return new User(dbClient).updateUser(args?.userId, args?.user);
+        },
+        async deleteUser(root, args, { token, user }, info) {
+            checkAuthentication(token, user, ['super']);
+
+            return new User(dbClient).deleteUser(args);
         },
         async login(root, args, { token, user }, info) {
             return new User(dbClient).login(args);

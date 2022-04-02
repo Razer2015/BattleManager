@@ -7,6 +7,23 @@ export default class Prisma {
         return await prisma.battlemanager_users.create({ data: user })
     }
 
+    async updateUser(userId, user) {
+        return await prisma.battlemanager_users.update({
+            where: {
+                id: userId,
+            },
+            data: user
+        })
+    }
+
+    async deleteUser(userId) {
+        return await prisma.battlemanager_users.delete({
+            where: {
+                id: userId,
+            }
+        })
+    }
+
     async getUserById(userId) {
         return await prisma.battlemanager_users.findUnique({
             where: {
@@ -21,6 +38,50 @@ export default class Prisma {
                 email: email,
             },
         })
+    }
+
+    async getAllUsers({ skip, limit, search }) {
+        if (!skip) skip = 0
+        if (!limit) limit = 20
+
+        const args = {}
+        if (search) {
+            args.where = {
+                OR: [
+                    {
+                        email: {
+                            contains: search,
+                        }
+                    },
+                    {
+                        name: {
+                            contains: search,
+                        }
+                    }
+                ]
+            }
+        }
+        const searchArgs = JSON.parse(JSON.stringify(args));
+
+        args.orderBy = [
+            {
+                name: 'asc',
+            }
+        ]
+        // args.include = {
+        //     battlemanager_userroles: {
+        //         include: {
+        //             battlemanager_roles: true
+        //         }
+        //     },
+        // }
+        args.skip = skip
+        args.take = limit
+
+        return await prisma.$transaction([
+            prisma.battlemanager_users.findMany(args),
+            prisma.battlemanager_users.count(searchArgs),
+        ])
     }
 
     async changeUserLoggedInById(userId, signedIn) {
@@ -47,6 +108,7 @@ export default class Prisma {
     }
 
     async getUserRoles(userId) {
+        if (!userId) return [];
         return await prisma.battlemanager_userroles.findMany({
             where: {
                 userId: userId,
@@ -55,6 +117,15 @@ export default class Prisma {
                 battlemanager_roles: true,
             }
         })
+    }
+
+    async upsertUserRoles(userId, roles) {
+        return await prisma.$transaction([
+            prisma.battlemanager_userroles.deleteMany({ where: { userId: userId } }),
+            prisma.battlemanager_userroles.createMany({
+                data: roles
+            }),
+        ]);
     }
 
     async getAllVips() {

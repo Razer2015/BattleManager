@@ -1,7 +1,7 @@
 import { PageHeader } from "antd";
-import { PlayersTable } from "../organisms/playersTable";
+import { UsersTable } from "../organisms/usersTable";
 
-export function PlayersView() {
+export function UsersView() {
     return (
         <div
             className="site-layout-background"
@@ -9,10 +9,10 @@ export function PlayersView() {
         >
             <PageHeader
                 className="site-page-header"
-                title="Players"
-                subTitle=""
+                title="Users"
+                subTitle="Here you can manager the BattleManager users."
             >
-                <PlayersTable style={{ padding: '16px 24px' }} />
+                <UsersTable style={{ padding: '16px 24px' }} />
             </PageHeader>
         </div>
     );

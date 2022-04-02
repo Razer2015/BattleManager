@@ -39,6 +39,26 @@ export const GET_ALL_PLAYERS = gql`
   }
 `;
 
+export const GET_ALL_USERS = gql`
+  query AllUsers($skip: Int, $limit: Int, $search: String) {
+    allUsers(skip: $skip, limit: $limit, search: $search) {
+      count
+      data {
+        signedIn
+        userId
+        email
+        name
+        roles
+        userRoles {
+          id
+          name
+          description
+        }
+      }
+    }
+  }
+`;
+
 export const GET_ME = gql`
   query Me {
     me {
@@ -47,6 +67,23 @@ export const GET_ME = gql`
       email
       name
       roles
+    }
+  }
+`
+
+export const GET_USER = gql`
+  query GetUser($userId: Int!) {
+    getUser(userId: $userId) {
+      signedIn
+      userId
+      email
+      name
+      roles
+      userRoles {
+        description
+        name
+        id
+      }
     }
   }
 `

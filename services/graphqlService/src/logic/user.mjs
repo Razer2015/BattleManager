@@ -12,7 +12,7 @@ export default class User extends BaseLogic {
         super(...args)
     }
 
-    async createUser({ email, password }) {
+    async createUser({ name, email, password, roles }) {
         const user = await this.db.createUser({
             email: email,
             email_normalized: email.toUpperCase(),
@@ -22,6 +22,11 @@ export default class User extends BaseLogic {
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
         })
+            .then(user => {
+                return this.db.upsertUserRoles(user.id, roles.map(roleId => {
+                    return { roleId, userId: user.id };
+                }));
+            })
             .catch(e => {
                 if (e instanceof Prisma.PrismaClientKnownRequestError) {
                     if (e.code === 'P2002') {
@@ -38,11 +43,82 @@ export default class User extends BaseLogic {
 
         if (!user) throw new Error('Failed to create user');
 
-        return generateTokenFromUser(user, password)
-            .then(result => {
-                this.db.changeUserLoggedInById(user.id, true);
-                return result;
+        return user;
+
+        // return generateTokenFromUser(user, password)
+        //     .then(result => {
+        //         this.db.changeUserLoggedInById(user.id, true);
+        //         return result;
+        //     });
+    }
+
+    async updateUser(userId, { name, email, roles }) {
+        const oldUser = await this.db.getUserById(userId);
+
+        const user = await this.db.updateUser(userId, {
+            email: email,
+            email_normalized: email.toUpperCase(),
+            name: name,
+            password: oldUser.password,
+            locked: oldUser.locked,
+            created_at: oldUser.created_at,
+            updated_at: new Date().toISOString(),
+        })
+            .then(user => {
+                return this.db.upsertUserRoles(user.id, roles.map(roleId => {
+                    return { roleId, userId: user.id };
+                }));
+            })
+            .catch(e => {
+                if (e instanceof Prisma.PrismaClientKnownRequestError) {
+                    if (e.code === 'P2002') {
+                        console.log(
+                            'There is a unique constraint violation, a new user cannot be created with this email'
+                        )
+
+                        throw new UserConflictError('User with the same email already exists.');
+                    }
+                }
+
+                throw e
             });
+
+        if (!user) throw new Error('Failed to update user');
+
+        return user;
+    }
+
+    async deleteUser({ userId }) {
+        const user = await this.db.getUserById(userId);
+
+        await this.db.deleteUser(userId);
+
+        return user;
+    }
+
+    async getUser(args) {
+        return await this.db.getUserById(args?.userId)
+            .then(user => {
+                return {
+                    userId: user?.id,
+                    signedIn: user?.is_logged_in,
+                    ...user
+                }
+            });
+    }
+
+    async getUsers(args) {
+        const [users, usersCount] = await this.db.getAllUsers(args);
+        return {
+            count: usersCount,
+            data: users.map(user => {
+                return {
+                    userId: user?.id,
+                    signedIn: user?.is_logged_in,
+                    ...user
+                };
+            })
+        };
     }
 
     async login({ email, password }) {

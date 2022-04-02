@@ -58,11 +58,20 @@ export default function Auth({ children }) {
 
     useEffect(() => {
         checkAuth()
+        // eslint-disable-next-line
     }, [isAuthenticated])
 
     const checkAuth = () => checkIsAuthenticated()
     const login = credentials => authLogin({ variables: credentials })
     const logout = () => authLogout()
+
+    const hasRole = (roleData) => {
+        if (Array.isArray(roleData)) {
+            return userProfile?.roles?.some(role => roleData.includes(role));
+        }
+
+        return userProfile?.roles?.includes(roleData);
+    }
 
     // const signUp = credentials => authSignUp(credentials)
     //     .then((data) => setAuthState(data))
@@ -72,7 +81,7 @@ export default function Auth({ children }) {
     //     })
 
     return (
-        <AuthContext.Provider value={{ userProfile, isAuthenticated, isLoading, login, logout/*, signUp*/ }}>
+        <AuthContext.Provider value={{ userProfile, hasRole, isAuthenticated, isLoading, login, logout/*, signUp*/ }}>
             {children}
         </AuthContext.Provider>
     )

@@ -17,6 +17,13 @@ export const typeDefs = gql`
     email: String
     name: String
     roles: [String]
+    userRoles: [Role]
+  }
+
+  type Role {
+    id: Int!
+    name: String
+    description: String
   }
 
   type Vip {
@@ -52,15 +59,37 @@ export const typeDefs = gql`
     data: [PlayerData!]
   }
 
+  type PaginatedUserData {
+    count: Int!
+    data: [User!]
+  }
+
   type Query {
     me: User
     vip(id: Int!): Vip
     allVips: [Vip!]!
     allPlayers(skip: Int, limit: Int, search: String): PaginatedPlayerData!
+    allUsers(skip: Int, limit: Int, search: String): PaginatedUserData!
+    getUser(userId: Int!): User
+  }
+
+  input UserInput {
+    name: String
+    email: String!
+    password: String!
+    roles: [Int!]!
+  }
+
+  input UserUpdateInput {
+    name: String
+    email: String!
+    roles: [Int!]!
   }
 
   type Mutation {
-    createUser(email: String!, password: String!, name: String): Token
+    createUser(user: UserInput!): User
+    updateUser(userId: Int!, user: UserUpdateInput!): User
+    deleteUser(userId: Int!): User
     login(email: String!, password: String!): Token
     loginSafe(email: String!, password: String!): User
     logout: String
