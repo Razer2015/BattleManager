@@ -1,5 +1,5 @@
 import './App.css';
-import { Layout, Menu, Typography } from 'antd';
+import { Layout, Menu, Spin, Typography } from 'antd';
 import { DollarOutlined, HomeOutlined, UserOutlined } from '@ant-design/icons';
 import {
   BrowserRouter as Router,
@@ -33,9 +33,9 @@ function App() {
 function BaseLayout() {
   const location = useLocation();
   const isLoginPage = location?.pathname?.toLowerCase() === '/login';
-  const { hasRole } = useContext(AuthContext);
+  const { hasRole, isAuthenticated } = useContext(AuthContext);
 
-  if (isLoginPage) {
+  if (isLoginPage || !isAuthenticated) {
     return (<Layout style={{ height: "100vh" }}>
       <Header className="site-layout-sub-header-background" style={{
         display: 'flex',

@@ -26,9 +26,9 @@ export function LogoutComponent() {
                 </Row>
             </Typography>
             <Divider style={{ margin: 0 }} />
-            <Menu.Item disabled>Profile</Menu.Item>
+            <Menu.Item key="profile" disabled>Profile</Menu.Item>
             <Divider style={{ margin: 0 }} />
-            <Menu.Item danger onClick={logout}><LogoutOutlined /> Sign out</Menu.Item>
+            <Menu.Item key="sign_out" danger onClick={logout}><LogoutOutlined /> Sign out</Menu.Item>
         </Menu>
     );
 
@@ -44,6 +44,7 @@ export function LogoutComponent() {
 }
 
 function getGravatarUrl(email) {
-    const hash = md5(email?.trim()?.toLowerCase(), { encoding: "binary" })
+    const trimmedEmail = email?.trim()?.toLowerCase();
+    const hash = !trimmedEmail ? '' : md5(trimmedEmail, { encoding: "binary" })
     return `https://gravatar.com/avatar/${hash}`;
 }
