@@ -1,7 +1,6 @@
 import { Tag } from "antd";
 
 export function renderSignedIn(signedIn) {
-    console.log(signedIn);
     let color = signedIn ? 'green' : 'red';
     
     return (
