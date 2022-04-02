@@ -5,7 +5,7 @@ import { Button, Col, Popconfirm, Row, Table, Tooltip } from 'antd';
 import { useEffect, useState } from 'react';
 import { DELETE_USER } from '../graphql/mutations';
 import { GET_ALL_USERS } from '../graphql/queries';
-import { renderLoggedIn } from '../molecules/loggedIn';
+import { renderSignedIn } from '../molecules/signedIn';
 import { renderRoles } from '../molecules/roles';
 import columnSearchProps from '../utilities/columnSearchProps';
 import { notificationWithIcon } from '../utilities/notification';
@@ -87,10 +87,10 @@ export function UsersTable() {
             render: (roles, row) => renderRoles(roles)
         },
         {
-            title: 'Logged in',
-            dataIndex: 'is_logged_in',
-            key: 'is_logged_in',
-            render: (timestamp, row) => renderLoggedIn(row)
+            title: 'Signed in',
+            dataIndex: 'signedIn',
+            key: 'signedIn',
+            render: (signedIn, row) => renderSignedIn(signedIn)
         },
         {
             title: 'Actions',
