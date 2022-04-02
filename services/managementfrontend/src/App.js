@@ -88,7 +88,7 @@ function BaseLayout() {
         </Menu>
       </Sider>
       <Layout>
-        <Header className="site-layout-sub-header-background" style={{ padding: 0 }}>
+        <Header className="site-layout-sub-header-background" style={{ padding: 0, paddingRight: 24, textAlign: 'right' }}>
           <LogoutComponent></LogoutComponent>
         </Header>
         <Content>
