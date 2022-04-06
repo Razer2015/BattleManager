@@ -38,6 +38,58 @@ export const DELETE_USER = gql`
   }
 `;
 
+
+export const CREATE_VIP = gql`
+  mutation CreateVip($vip: VipInput!) {
+    createVip(vip: $vip) {
+      ID
+      gametype
+      servergroup
+      playername
+      timestamp
+      status
+      admin
+      comment
+      guid
+      discord_id
+    }
+  }
+`;
+
+export const UPDATE_VIP = gql`
+  mutation UpdateVip($vipId: Int!, $vip: VipUpdateInput!) {
+    updateVip(vipId: $vipId, vip: $vip) {
+      ID
+      gametype
+      servergroup
+      playername
+      timestamp
+      status
+      admin
+      comment
+      guid
+      discord_id
+    }
+  }
+`;
+
+export const DELETE_VIP = gql`
+  mutation DeleteVip($vipId: Int!) {
+    deleteVip(vipId: $vipId) {
+      ID
+      gametype
+      servergroup
+      playername
+      timestamp
+      status
+      admin
+      comment
+      guid
+      discord_id
+    }
+  }
+`;
+
 export const LOGIN = gql`
   mutation LoginSafe($email: String!, $password: String!) {
     loginSafe(email: $email, password: $password) {

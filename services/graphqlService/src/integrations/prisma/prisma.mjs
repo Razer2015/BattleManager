@@ -128,9 +128,38 @@ export default class Prisma {
         ]);
     }
 
+    async createVip(vip) {
+        return await prisma.vsm_vips.create({ data: vip })
+    }
+
+    async updateVip(vipId, vip) {
+        return await prisma.vsm_vips.update({
+            where: {
+                ID: vipId,
+            },
+            data: vip
+        })
+    }
+
+    async deleteVip(vipId) {
+        return await prisma.vsm_vips.delete({
+            where: {
+                ID: vipId,
+            }
+        })
+    }
+
     async getAllVips() {
         const allVips = await prisma.vsm_vips.findMany()
         return allVips
+    }
+
+    async getVipById(vipId) {
+        return await prisma.vsm_vips.findUnique({
+            where: {
+                ID: vipId,
+            },
+        })
     }
 
     async getAllPlayersCount({ search }) {
@@ -166,5 +195,29 @@ export default class Prisma {
         args.take = limit
         const allPlayers = await prisma.tbl_playerdata.findMany(args)
         return allPlayers
+    }
+
+    async getGames() {
+        return await prisma.tbl_games.findMany()
+    }
+
+    async getGameById(gameId) {
+        return await prisma.tbl_games.findFirst({
+            where: {
+                GameID: gameId,
+            },
+        })
+    }
+
+    async getServers() {
+        return await prisma.tbl_server.findMany()
+    }
+
+    async getServersByGameID(gameId) {
+        return await prisma.tbl_server.findMany({
+            where: {
+                GameID: gameId,
+            }
+        })
     }
 }

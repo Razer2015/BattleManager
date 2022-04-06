@@ -39,6 +39,18 @@ export const typeDefs = gql`
     discord_id: BigInt
   }
 
+  type Game {
+    GameID: Int!
+    Name: String
+  }
+
+  type Server {
+    ServerID: Int!
+    ServerGroup: Int!
+    ServerName: String
+    GameID: Int!
+  }
+
   type PlayerData {
     PlayerID:                                                          Int!
     GameID:                                                            Int
@@ -68,9 +80,13 @@ export const typeDefs = gql`
     me: User
     vip(id: Int!): Vip
     allVips: [Vip!]!
+    getVip(vipId: Int!): Vip
     allPlayers(skip: Int, limit: Int, search: String): PaginatedPlayerData!
     allUsers(skip: Int, limit: Int, search: String): PaginatedUserData!
     getUser(userId: Int!): User
+    getGames: [Game!]!
+    getServers: [Server!]!
+    getServersByGameID(gameID: Int!): [Server!]!
   }
 
   input UserInput {
@@ -86,6 +102,24 @@ export const typeDefs = gql`
     roles: [Int!]!
   }
 
+  input VipInput {
+    gametype: Int!
+    servergroup: Int!
+    playername: String!
+    timestamp: Timestamp!
+    status: String!
+    comment: String
+    discord_id: BigInt
+  }
+
+  input VipUpdateInput {
+    playername: String!
+    timestamp: Timestamp!
+    status: String!
+    comment: String
+    discord_id: BigInt
+  }
+
   type Mutation {
     createUser(user: UserInput!): User
     updateUser(userId: Int!, user: UserUpdateInput!): User
@@ -95,6 +129,8 @@ export const typeDefs = gql`
     logout: String
     token(refreshToken: String!): Token
     tokenSafe: User
-    createVip(name: String!, email: String!, password: String!): Vip!
+    createVip(vip: VipInput!): Vip
+    updateVip(vipId: Int!, vip: VipUpdateInput!): Vip
+    deleteVip(vipId: Int!): Vip
   }
 `;

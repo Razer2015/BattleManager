@@ -15,3 +15,12 @@ export class UserConflictError extends ApolloError {
         Object.defineProperty(this, 'name', { value: 'UserConflictError' });
     }
 }
+
+export class NotFoundError extends ApolloError {
+    constructor(message) {
+        super(message, '404');
+
+        Object.defineProperty(this, 'name', { value: 'NotFoundError' });
+    }
+}
+

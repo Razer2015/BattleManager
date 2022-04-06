@@ -40,7 +40,7 @@ export const Timestamp = new GraphQLScalarType({
 // https://github.com/Nberezhnoy/apollo-type-bigint
 const MAX_INT = Number.MAX_SAFE_INTEGER;
 const MIN_INT = Number.MIN_SAFE_INTEGER;
-export const BigInt = new GraphQLScalarType({
+export const BigIntScalar = new GraphQLScalarType({
     name: 'BigInt',
     description: "The `BigInt` scalar type represents non-fractional signed whole numeric values." +
         "BigInt can represent values between -(2^53) + 1 and 2^53 - 1.",
@@ -57,6 +57,7 @@ export const BigInt = new GraphQLScalarType({
         }
     },
     parseValue(value) {
+        return BigInt(value);
         if (typeof value !== "number") {
             throw new TypeError(`BigInt cannot represent non-integer value: ${value}`);
         }

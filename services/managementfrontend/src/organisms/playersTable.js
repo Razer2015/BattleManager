@@ -30,6 +30,7 @@ export function PlayersTable() {
 
     useEffect(() => {
         fetchPlayers(tableConfig.current, tableConfig.pageSize);
+        // eslint-disable-next-line
     }, [])
 
     const fetchPlayers = (page, size, filters) => {

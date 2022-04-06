@@ -1,7 +1,7 @@
 import { Tag } from "antd";
 
 export function renderStatus(status) {
-    let color = status === 'active' ? 'green' : 'red';
+    let color = status === 'active' ? 'green' : status === 'inactive' ? 'red' : '#2f2f2f';
     
     return (
         <Tag color={color} key={status}>

@@ -17,6 +17,26 @@ export const GET_ALL_VIPS = gql`
   }
 `;
 
+export const GET_GAMES = gql`
+  query GetGames {
+    getGames {
+      GameID
+      Name
+    }
+  }
+`;
+
+export const GET_SERVERS_BY_GAMEID = gql`
+  query GetServersByGameID($gameId: Int!) {
+    getServersByGameID(gameID: $gameId) {
+      ServerID
+      ServerGroup
+      ServerName
+      GameID
+    }
+  }
+`;
+
 export const GET_ALL_PLAYERS = gql`
   query AllPlayers($skip: Int, $limit: Int, $search: String) {
     allPlayers(skip: $skip, limit: $limit, search: $search) {
@@ -87,3 +107,22 @@ export const GET_USER = gql`
     }
   }
 `
+
+export const GET_VIP = gql`
+  query GetVip($vipId: Int!) {
+    getVip(vipId: $vipId) {
+      ID
+      gametype
+      servergroup
+      playername
+      timestamp
+      status
+      admin
+      comment
+      guid
+      discord_id
+    }
+  }
+`
+
+

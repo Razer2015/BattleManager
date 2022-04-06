@@ -4,7 +4,7 @@ import { ACCESS_TOKEN_NAME, REFRESH_TOKEN_NAME } from '../constants.mjs';
 const { Prisma } = pkg;
 import { hashPassword } from "../integrations/crypto/crypto.mjs";
 import { addTokenCookies, clearTokenCookies, generateTokenFromEmail, generateTokenFromRefreshToken, generateTokenFromUser } from "../utils/authentication.mjs";
-import { UserConflictError } from '../utils/errors.mjs';
+import { NotFoundError, UserConflictError } from '../utils/errors.mjs';
 import BaseLogic from "./baseLogic.mjs";
 
 export default class User extends BaseLogic {
@@ -90,6 +90,7 @@ export default class User extends BaseLogic {
 
     async deleteUser({ userId }) {
         const user = await this.db.getUserById(userId);
+        if (!user) throw new NotFoundError('User not found');
 
         await this.db.deleteUser(userId);
 

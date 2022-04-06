@@ -1,5 +1,5 @@
 import './App.css';
-import { Layout, Menu, Spin, Typography } from 'antd';
+import { Layout, Menu, Typography } from 'antd';
 import { DollarOutlined, HomeOutlined, UserOutlined } from '@ant-design/icons';
 import {
   BrowserRouter as Router,
