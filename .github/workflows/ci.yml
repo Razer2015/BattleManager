@@ -71,6 +71,7 @@ jobs:
         with:
           builder: ${{ steps.builder_graphql.outputs.name }}
           context: ./services/graphqlService/
+          platforms: linux/amd64,linux/arm64
           file: ./services/graphqlService/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/battlemanager-graphqlservice:${{ env.COMMIT_TAG }},${{ secrets.DOCKER_USERNAME }}/battlemanager-graphqlservice:latest
@@ -129,6 +130,7 @@ jobs:
         with:
           builder: ${{ steps.builder_managementfrontend.outputs.name }}
           context: ./services/managementfrontend/
+          platforms: linux/amd64,linux/arm64
           file: ./services/managementfrontend/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/battlemanager-managementfrontend:${{ env.COMMIT_TAG }},${{ secrets.DOCKER_USERNAME }}/battlemanager-managementfrontend:latest
