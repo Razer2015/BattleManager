@@ -39,6 +39,10 @@ jobs:
         run: |
           echo $COMMIT_TAG
           echo ${{ env.COMMIT_TAG }}
+      # Support for more platforms
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
       # Creating builder
       -
         uses: docker/setup-buildx-action@v1
@@ -98,6 +102,10 @@ jobs:
         run: |
           echo $COMMIT_TAG
           echo ${{ env.COMMIT_TAG }}
+      # Support for more platforms
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
       # Creating builder
       -
         uses: docker/setup-buildx-action@v1
