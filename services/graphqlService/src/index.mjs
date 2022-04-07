@@ -106,7 +106,7 @@ async function startApolloServer(typeDefs, resolvers) {
             credentials: true,
         }
     }));
-    await app.listen(4000);
+    await app.listen(4000, '0.0.0.0');
     console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`);
 }
 

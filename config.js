@@ -1,0 +1,3 @@
+window.config = {
+    "BACKEND_ENDPOINT": "http://localhost:4000/graphql"
+}

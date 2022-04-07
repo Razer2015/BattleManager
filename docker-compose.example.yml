@@ -1,0 +1,23 @@
+version: '3.2'
+
+services:
+  graphqlservice:
+    image: xfilefin/battlemanager-graphqlservice:latest
+    ports:
+      - "4000:4000"
+    environment:
+      APP_KEY: battlemanager-development
+      COOKIE_SECRET: battlemanager-development
+      ACCESS_TOKEN_SECRET_KEY: battlemanager-development
+      ACCESS_TOKEN_LIFE: 300
+      REFRESH_TOKEN_SECRET_KEY: battlemanager-development
+      REFRESH_TOKEN_LIFE: 86400
+      ALLOWED_ORIGINS: http://localhost:3000,https://studio.apollographql.com
+      DATABASE_URL: mysql://dbusername:dbpassword@dbhostname:3306/dbname
+
+  managementfrontend:
+    image: xfilefin/battlemanager-managementfrontend:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./config.js:/usr/share/nginx/html/config.js
