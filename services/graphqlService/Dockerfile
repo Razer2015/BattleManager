@@ -1,4 +1,5 @@
-FROM node:lts-alpine3.15
+# FROM node:lts-alpine3.15 # Had to remove because Prisma wouldn't work on arm64 architecture
+FROM node:lts AS builder
 WORKDIR /app
 
 # COPY package.json and package-lock.json files
@@ -15,6 +16,10 @@ RUN npx prisma generate
 
 # COPY
 COPY . .
+
+FROM node:lts
+
+COPY --from=builder /app .
 
 # Run and expose the server on port 4000
 EXPOSE 4000
