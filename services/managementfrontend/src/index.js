@@ -9,15 +9,28 @@ import {
   InMemoryCache,
   createHttpLink,
   ApolloProvider,
+  from,
 } from "@apollo/client";
+import { onError } from "@apollo/client/link/error";
 
 const httpLink = createHttpLink({
   uri: window?.config?.BACKEND_ENDPOINT ?? process.env.REACT_APP_GRAPHQL_HOST,
   credentials: 'include'
 });
 
+const errorLink = onError(({ graphQLErrors, networkError }) => {
+  // if (graphQLErrors) {
+  //   for (let err of graphQLErrors) {
+  //     switch (err.extensions.code) {
+  //     }
+  //   }
+  // }
+
+  if (networkError) console.log(`[Network error]: ${networkError}`);
+});
+
 const client = new ApolloClient({
-  link: httpLink,
+  link: from([errorLink, httpLink]),
   cache: new InMemoryCache(),
 });
 

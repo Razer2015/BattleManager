@@ -124,5 +124,3 @@ export const GET_VIP = gql`
     }
   }
 `
-
-

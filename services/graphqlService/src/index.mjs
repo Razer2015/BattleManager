@@ -85,9 +85,9 @@ async function startApolloServer(typeDefs, resolvers) {
             return { request, reply, token, refreshToken, user };
         },
         formatError: (err) => {
-            if (err.originalError instanceof AuthenticationError) {
-                return new Error('Unauthenticated');
-            }
+            // if (err.originalError instanceof AuthenticationError) {
+            //     return new Error('Unauthenticated');
+            // }
 
             // Otherwise return the original error. The error can also
             // be manipulated in other ways, as long as it's returned.

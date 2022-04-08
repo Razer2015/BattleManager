@@ -15,15 +15,19 @@ export default function Auth({ children }) {
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
     const location = useLocation();
+    const pollInterval = window?.config?.ME_POLLING_ENABLED ? (window?.config?.ME_POLLING_INTERVAL ?? 30 * 1000) : null;
     const [checkIsAuthenticated] = useLazyQuery(GET_ME, {
         fetchPolicy: 'network-only',
-        pollInterval: 10 * 1000,
+        pollInterval: pollInterval,
         onCompleted: (data) => {
             setUserProfile(data.me);
             setIsAuthenticated(data?.me?.signedIn);
+            window.localStorage.setItem('signed_in', data?.me?.signedIn)
+
             setIsLoading(false);
 
-            if (isAuthenticated) {
+            const isLoginPage = location?.pathname?.toLowerCase() === '/login';
+            if (isAuthenticated && isLoginPage) {
                 if (location.state?.from) {
                     navigate(location.state.from);
                 }
@@ -79,6 +83,13 @@ export default function Auth({ children }) {
     //         alert(error)
     //         setAuthState(defaultAuthState)
     //     })
+
+    function storageChange(event) {
+        if (event.key === 'signed_in') {
+            checkAuth();
+        }
+    }
+    window.addEventListener('storage', storageChange, false)
 
     return (
         <AuthContext.Provider value={{ userProfile, hasRole, isAuthenticated, isLoading, login, logout/*, signUp*/ }}>
