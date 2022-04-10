@@ -113,6 +113,6 @@ export function VipsTable() {
                 </Tooltip>
             </Col>
         </Row>
-        <Table rowKey={'ID'} loading={loading} dataSource={vipsData?.allVips} columns={columns} />
+        <Table size="small" rowKey={'ID'} loading={loading} dataSource={vipsData?.allVips} columns={columns} />
     </>;
 }

@@ -213,11 +213,36 @@ export default class Prisma {
         return await prisma.tbl_server.findMany()
     }
 
+    async getServeryByID(serverId) {
+        return await prisma.tbl_server.findFirst({
+            where: {
+                ServerID: serverId,
+            }
+        })
+    }
+
     async getServersByGameID(gameId) {
         return await prisma.tbl_server.findMany({
             where: {
                 GameID: gameId,
             }
+        })
+    }
+
+    async getServeryByIP(ipAddress) {
+        return await prisma.tbl_server.findFirst({
+            where: {
+                IP_Address: ipAddress,
+            }
+        })
+    }
+
+    async updateServer(serverId, server) {
+        return await prisma.tbl_server.update({
+            where: {
+                ServerID: serverId,
+            },
+            data: server
         })
     }
 }

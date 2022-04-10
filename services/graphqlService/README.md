@@ -14,6 +14,7 @@
 | ACCESS_TOKEN_LIFE         | 900                                                       |
 | REFRESH_TOKEN_SECRET_KEY  | battlemanager-development                                 |
 | REFRESH_TOKEN_LIFE        | 86400                                                     |
+| INTERNAL_TOKEN            | 50655368566D597133743677397A2443                          |
 |---------------------------|-----------------------------------------------------------|
 
 <hr>
@@ -38,3 +39,29 @@ https://www.prisma.io/docs/getting-started/setup-prisma/start-from-scratch/relat
 
 <hr>
 
+## Database schema
+
+
+### BattleManager
+```
+battlemanager_*
+```
+
+prefixed tables
+
+### Vip Slot Manager
+
+```
+vsm_vips
+```
+- Added `discord_id` column with type `BIGINT` and `allow nulls`
+
+_Also make sure all tables are lowecase only_
+### Chat, Stats, GUID logger
+
+```
+tbl_server
+```
+
+- Added `battlemanager_endpoint` column with type `VARCHAR(200)` and `allow nulls`
+- Added `battlemanager_lastconnection` column with type `TIMESTAMP` and `allow nulls`

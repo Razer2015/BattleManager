@@ -124,3 +124,52 @@ export const GET_VIP = gql`
     }
   }
 `
+
+export const GET_SERVERINFO = gql`
+  query ServerInfo($serverId: Int!) {
+    serverInfo(serverId: $serverId) {
+      server_name
+      playercount
+      max_playercount
+      game_mode
+      map
+      rounds_played
+      rounds_total
+      scores {
+        number_of_entries
+        scores
+        target_score
+      }
+      online_state
+      ranked
+      punkbuster
+      has_gamepassword
+      server_uptime
+      roundtime
+      game_ip_and_port
+      punkbuster_version
+      join_queue_enabled
+      region
+      closest_ping_site
+      country
+      blaze_player_count
+      blaze_game_state
+    }
+  }
+`
+
+export const LIST_PLAYERS = gql`
+  query ListPlayers($serverId: Int!) {
+    listPlayers(serverId: $serverId) {
+      player_name
+      eaid
+      squad
+      team
+      kills
+      deaths
+      score
+      rank
+      ping
+    }
+  }
+`

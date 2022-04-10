@@ -658,30 +658,32 @@ model tbl_playerstats {
 }
 
 model tbl_server {
-  ServerID                  Int                         @id @default(autoincrement()) @db.UnsignedSmallInt
-  ServerGroup               Int                         @default(0) @db.UnsignedTinyInt
-  IP_Address                String?                     @unique(map: "IP_Address_UNIQUE") @db.VarChar(45)
-  ServerName                String?                     @db.VarChar(200)
-  GameID                    Int                         @default(0) @db.UnsignedTinyInt
-  usedSlots                 Int?                        @default(0) @db.UnsignedSmallInt
-  maxSlots                  Int?                        @default(0) @db.UnsignedSmallInt
-  mapName                   String?                     @db.VarChar(45)
-  fullMapName               String?                     @db.Text
-  Gamemode                  String?                     @db.VarChar(45)
-  GameMod                   String?                     @db.VarChar(45)
-  PBversion                 String?                     @db.VarChar(45)
-  ConnectionState           String?                     @db.VarChar(45)
-  adkats_challenge_reward   adkats_challenge_reward[]
-  adkats_challenge_rule     adkats_challenge_rule[]
-  adkats_infractions_server adkats_infractions_server[]
-  adkats_records_debug      adkats_records_debug[]
-  adkats_records_main       adkats_records_main[]
-  adkats_settings           adkats_settings[]
-  adkats_specialplayers     adkats_specialplayers[]
-  adkats_statistics         adkats_statistics[]
-  bfacp_settings_servers    bfacp_settings_servers?
-  tbl_server_player         tbl_server_player[]
-  tbl_server_stats          tbl_server_stats?
+  ServerID                     Int                         @id @default(autoincrement()) @db.UnsignedSmallInt
+  ServerGroup                  Int                         @default(0) @db.UnsignedTinyInt
+  IP_Address                   String?                     @unique(map: "IP_Address_UNIQUE") @db.VarChar(45)
+  ServerName                   String?                     @db.VarChar(200)
+  GameID                       Int                         @default(0) @db.UnsignedTinyInt
+  usedSlots                    Int?                        @default(0) @db.UnsignedSmallInt
+  maxSlots                     Int?                        @default(0) @db.UnsignedSmallInt
+  mapName                      String?                     @db.VarChar(45)
+  fullMapName                  String?                     @db.Text
+  Gamemode                     String?                     @db.VarChar(45)
+  GameMod                      String?                     @db.VarChar(45)
+  PBversion                    String?                     @db.VarChar(45)
+  ConnectionState              String?                     @db.VarChar(45)
+  battlemanager_endpoint       String?                     @db.VarChar(200)
+  battlemanager_lastconnection DateTime?                   @db.Timestamp(0)
+  adkats_challenge_reward      adkats_challenge_reward[]
+  adkats_challenge_rule        adkats_challenge_rule[]
+  adkats_infractions_server    adkats_infractions_server[]
+  adkats_records_debug         adkats_records_debug[]
+  adkats_records_main          adkats_records_main[]
+  adkats_settings              adkats_settings[]
+  adkats_specialplayers        adkats_specialplayers[]
+  adkats_statistics            adkats_statistics[]
+  bfacp_settings_servers       bfacp_settings_servers?
+  tbl_server_player            tbl_server_player[]
+  tbl_server_stats             tbl_server_stats?
 
   @@index([ServerGroup], map: "INDEX_SERVERGROUP")
 }

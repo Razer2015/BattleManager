@@ -65,6 +65,17 @@ export const resolvers = {
 
             return new Server(dbClient).getServersByGameID(args);
         },
+
+        async serverInfo(root, args, { token, user }, info) {
+            checkAuthentication(token, user, ['super', 'admin', 'user']);
+
+            return new Server(dbClient).getServerInfo(user, args);
+        },
+        async listPlayers(root, args, { token, user }, info) {
+            checkAuthentication(token, user, ['super', 'admin', 'user']);
+
+            return new Server(dbClient).getServerPlayers(user, args);
+        },
     },
     Mutation: {
         async createUser(root, args, { token, user }, info) {

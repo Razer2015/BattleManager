@@ -1,0 +1,28 @@
+[package]
+name = "rcon-connector"
+version = "0.1.0"
+authors = ["Razer2015 <razer138@gmail.com>"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+actix-web = "4"
+awc = "3"
+mime = "0.3.16"
+battlefield_rcon = { git = "https://github.com/Kiiyya/BattleFox", branch = "main"}
+ascii = "1.0.0" # Rust only supports UTF-8, but RCON does ascii stuff.
+futures = "0.3.21"
+periodic = "0.1.1"
+async-std = "1.11.0"
+
+dotenv = "0.15"
+
+# Serialization stuff
+serde = { version = "1", features = [ "derive" ] }
+serde_json = "1"
+
+log = "0.4"
+flexi_logger = { version = "0.17", features = ["colors"] }
+
+reqwest = { version = "0.11", features = ["blocking", "json"] }

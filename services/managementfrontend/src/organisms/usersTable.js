@@ -120,6 +120,7 @@ export function UsersTable() {
         </Row>
         <Table
             rowKey={'userId'}
+            size="small"
             loading={loading}
             dataSource={usersData?.allUsers?.data}
             columns={columns}

@@ -68,6 +68,7 @@ export function PlayersTable() {
 
     return <Table
         rowKey={'PlayerID'}
+        size="small"
         loading={loading}
         dataSource={playersData?.allPlayers?.data}
         columns={columns}

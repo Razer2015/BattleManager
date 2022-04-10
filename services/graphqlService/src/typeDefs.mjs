@@ -66,6 +66,49 @@ export const typeDefs = gql`
     updated_at:                                                        Timestamp
   }
 
+  type ServerInfo {
+    server_name:                                                       String
+    playercount:                                                       Int
+    max_playercount:                                                   Int
+    game_mode:                                                         String
+    map:                                                               String
+    rounds_played:                                                     Int
+    rounds_total:                                                      Int
+    scores:                                                            Scores
+    online_state:                                                      String
+    ranked:                                                            Boolean
+    punkbuster:                                                        Boolean
+    has_gamepassword:                                                  Boolean
+    server_uptime:                                                     Timestamp
+    roundtime:                                                         Timestamp
+    game_ip_and_port:                                                  String
+    punkbuster_version:                                                String
+    join_queue_enabled:                                                Boolean
+    region:                                                            String
+    closest_ping_site:                                                 String
+    country:                                                           String
+    blaze_player_count:                                                Int
+    blaze_game_state:                                                  String
+  }
+
+  type Scores {
+    number_of_entries: Int
+    scores: [Int]
+    target_score: Int
+  }
+
+  type Player {
+    player_name: String
+    eaid: String
+    squad: Int
+    team: Int
+    kills: Int
+    deaths: Int
+    score: Int
+    rank: Int
+    ping: Int
+  }
+
   type PaginatedPlayerData {
     count: Int!
     data: [PlayerData!]
@@ -87,6 +130,8 @@ export const typeDefs = gql`
     getGames: [Game!]!
     getServers: [Server!]!
     getServersByGameID(gameID: Int!): [Server!]!
+    serverInfo(serverId: Int!): ServerInfo
+    listPlayers(serverId: Int!): [Player]
   }
 
   input UserInput {
