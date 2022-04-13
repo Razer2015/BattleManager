@@ -15,6 +15,9 @@
 | REFRESH_TOKEN_SECRET_KEY  | battlemanager-development                                 |
 | REFRESH_TOKEN_LIFE        | 86400                                                     |
 | INTERNAL_TOKEN            | 50655368566D597133743677397A2443                          |
+| ADMIN_USERNAME            | admin                                                     |
+| ADMIN_EMAIL               | admin@battlemanager.com                                   |
+| ADMIN_PASSWORD            | password                                                  |
 |---------------------------|-----------------------------------------------------------|
 
 <hr>
