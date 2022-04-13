@@ -14,6 +14,10 @@ services:
       REFRESH_TOKEN_LIFE: 86400
       ALLOWED_ORIGINS: http://localhost:3000,https://studio.apollographql.com
       DATABASE_URL: mysql://dbusername:dbpassword@dbhostname:3306/dbname
+      INTERNAL_TOKEN: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+      ADMIN_USERNAME: admin
+      ADMIN_EMAIL: admin@battlemanager.com
+      ADMIN_PASSWORD: adminpassword
 
   managementfrontend:
     image: xfilefin/battlemanager-managementfrontend:latest
@@ -21,3 +25,15 @@ services:
       - "3000:3000"
     volumes:
       - ./config.js:/usr/share/nginx/html/config.js
+
+  rconconnector:
+    image: xfilefin/battlemanager-rconconnector:latest
+    # ports:
+    #   - "8080:8080"
+    environment:
+      RCON_IPPORT: 127.0.0.1:47200
+      RCON_PASSWORD: rconadminpassword
+      BACKEND_ENDPOINT: http://graphqlservice:4000
+      HOST_HOSTNAME: http://rconconnector:8080
+      INTERNAL_TOKEN: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+      RUST_LOG: debug
