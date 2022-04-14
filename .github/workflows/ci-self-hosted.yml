@@ -1,0 +1,238 @@
+name: ci
+
+on:
+  push:
+    tags:
+      - "version-*.*.*"
+
+env:
+  RELEASE_VERSION: ${{ github.run_number }}
+  COMMIT_HASH: ${{ github.sha }}
+
+jobs:
+  checkwebhookurl:
+    name: Check if WEBHOOK_URL is set in github secrets
+    runs-on: ubuntu-latest
+    outputs:
+      is_WEBHOOK_URL_set: ${{ steps.checksecret_job.outputs.is_WEBHOOK_URL_set }}
+    steps:
+      - name: Check whether webhook should be called or not
+        id: checksecret_job
+        env:
+            WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+        run: |
+            echo "is_WEBHOOK_URL_set: ${{ env.WEBHOOK_URL != '' }}"
+            echo "::set-output name=is_WEBHOOK_URL_set::${{ env.WEBHOOK_URL != '' }}"
+  build_and_push_battlemanager_graphql:
+    needs: [checkwebhookurl]
+    name: Build BattleManager GraphQL docker image and push to Docker Hub
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      - 
+        name: Set commit tag to env
+        run: echo "COMMIT_TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - 
+        name: Print release version
+        run: |
+          echo $COMMIT_TAG
+          echo ${{ env.COMMIT_TAG }}
+      # Support for more platforms
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      # Creating builder
+      -
+        uses: docker/setup-buildx-action@v1
+        id: builder_graphql
+      # Printing builder
+      -
+        name: battlemanager graphql builder name
+        run: echo ${{ steps.builder_graphql.outputs.name }}
+      # Caching layers for faster building
+      -
+        name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+      # Logging in to DockerHub
+      - 
+        name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      # Building image and pushing it to DockerHub
+      - 
+        name: Build battlemanager graphql and push
+        id: graphql_build
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.builder_graphql.outputs.name }}
+          context: ./services/graphqlService/
+          platforms: linux/amd64,linux/arm64
+          file: ./services/graphqlService/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/battlemanager-graphqlservice:${{ env.COMMIT_TAG }},${{ secrets.DOCKER_USERNAME }}/battlemanager-graphqlservice:latest
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+      # Printing image digests
+      - 
+        name: Image digest for battlemanager graphql
+        run: echo ${{ steps.graphql_build.outputs.digest }}
+
+  build_and_push_battlemanager_managementfrontend:
+    needs: [checkwebhookurl]
+    name: Build BattleManager management frontend docker image and push to Docker Hub
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      - 
+        name: Set commit tag to env
+        run: echo "COMMIT_TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - 
+        name: Print release version
+        run: |
+          echo $COMMIT_TAG
+          echo ${{ env.COMMIT_TAG }}
+      # Support for more platforms
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      # Creating builder
+      -
+        uses: docker/setup-buildx-action@v1
+        id: builder_managementfrontend
+      # Printing builder
+      -
+        name: managementfrontend builder name
+        run: echo ${{ steps.builder_managementfrontend.outputs.name }}
+      # Caching layers for faster building
+      -
+        name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+      # Logging in to DockerHub
+      - 
+        name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      # Building image and pushing it to DockerHub
+      - 
+        name: Build managementfrontend and push
+        id: managementfrontend_build
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.builder_managementfrontend.outputs.name }}
+          context: ./services/managementfrontend/
+          platforms: linux/amd64,linux/arm64
+          file: ./services/managementfrontend/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/battlemanager-managementfrontend:${{ env.COMMIT_TAG }},${{ secrets.DOCKER_USERNAME }}/battlemanager-managementfrontend:latest
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+      # Printing image digests
+      - 
+        name: Image digest for management frontend
+        run: echo ${{ steps.managementfrontend_build.outputs.digest }}
+
+  build_and_push_battlemanager_rconconnector:
+    needs: [checkwebhookurl]
+    name: Build BattleManager rcon connector docker image and push to Docker Hub
+    runs-on: self-hosted
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      - 
+        name: Set commit tag to env
+        run: echo "COMMIT_TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - 
+        name: Print release version
+        run: |
+          echo $COMMIT_TAG
+          echo ${{ env.COMMIT_TAG }}
+      # Support for more platforms
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      # Creating builder
+      -
+        uses: docker/setup-buildx-action@v1
+        id: builder_rconconnector
+      # Printing builder
+      -
+        name: rconconnector builder name
+        run: echo ${{ steps.builder_rconconnector.outputs.name }}
+      # Caching layers for faster building
+      -
+        name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+      # Logging in to DockerHub
+      - 
+        name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      # Building image and pushing it to DockerHub
+      - 
+        name: Build rconconnector and push
+        id: rconconnector_build
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.rconconnector.outputs.name }}
+          context: ./services/rcon-connector/
+          platforms: linux/amd64,linux/arm64
+          file: ./services/rcon-connector/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/battlemanager-rconconnector:${{ env.COMMIT_TAG }},${{ secrets.DOCKER_USERNAME }}/battlemanager-rconconnector:latest
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+      # Printing image digests
+      - 
+        name: Image digest for management frontend
+        run: echo ${{ steps.rconconnector_build.outputs.digest }}
+  
+  call_webhook:
+    needs: [checkwebhookurl, build_and_push_battlemanager_graphql, build_and_push_battlemanager_managementfrontend, build_and_push_battlemanager_rconconnector]
+    name: Call webhook if necessary
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      - 
+        name: Set commit tag to env
+        run: echo "COMMIT_TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - 
+        name: Print release version
+        run: |
+          echo $COMMIT_TAG
+          echo ${{ env.COMMIT_TAG }}
+      # Invoking deployment hook
+      - if: needs.checkwebhookurl.outputs.is_WEBHOOK_URL_set == 'true'
+        name: Invoke deployment hook
+        uses: distributhor/workflow-webhook@v1
+        env:
+          webhook_url: ${{ secrets.WEBHOOK_URL }}
+          webhook_secret: ${{ secrets.WEBHOOK_SECRET }}
+          data: '{ "commit_tag": "${{ env.COMMIT_TAG }}" }'
