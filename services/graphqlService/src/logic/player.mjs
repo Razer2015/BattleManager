@@ -5,10 +5,11 @@ export default class Player extends BaseLogic {
         super(...args)
     }
 
-    async getPlayers(args) {
+    async getPlayers(queryParams) {
+        const [data, count] = await this.db.getAllPlayers(queryParams);
         return {
-            count: this.db.getAllPlayersCount(args),
-            data: this.db.getAllPlayers(args)
+            count: count,
+            data: data
         };
     }
 }

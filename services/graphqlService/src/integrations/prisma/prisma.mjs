@@ -40,44 +40,8 @@ export default class Prisma {
         })
     }
 
-    async getAllUsers({ skip, limit, search }) {
-        if (!skip) skip = 0
-        if (!limit) limit = 20
-
-        const args = {}
-        if (search) {
-            args.where = {
-                OR: [
-                    {
-                        email: {
-                            contains: search,
-                        }
-                    },
-                    {
-                        name: {
-                            contains: search,
-                        }
-                    }
-                ]
-            }
-        }
-        const searchArgs = JSON.parse(JSON.stringify(args));
-
-        args.orderBy = [
-            {
-                name: 'asc',
-            }
-        ]
-        // args.include = {
-        //     battlemanager_userroles: {
-        //         include: {
-        //             battlemanager_roles: true
-        //         }
-        //     },
-        // }
-        args.skip = skip
-        args.take = limit
-
+    async getAllUsers(queryParams) {
+        const { args, searchArgs } = this.getQueryParameters(queryParams);
         return await prisma.$transaction([
             prisma.battlemanager_users.findMany(args),
             prisma.battlemanager_users.count(searchArgs),
@@ -149,9 +113,12 @@ export default class Prisma {
         })
     }
 
-    async getAllVips() {
-        const allVips = await prisma.vsm_vips.findMany()
-        return allVips
+    async getAllVips(queryParams) {
+        const { args, searchArgs } = this.getQueryParameters(queryParams);
+        return await prisma.$transaction([
+            prisma.vsm_vips.findMany(args),
+            prisma.vsm_vips.count(searchArgs),
+        ])
     }
 
     async getVipById(vipId) {
@@ -174,27 +141,12 @@ export default class Prisma {
         })
     }
 
-    async getAllPlayers({ skip, limit, search }) {
-        if (!skip) skip = 0
-        if (!limit) limit = 20
-
-        const args = {}
-        if (search) {
-            args.where = {
-                SoldierName: {
-                    contains: search,
-                },
-            }
-        }
-        args.orderBy = [
-            {
-                SoldierName: 'asc',
-            }
-        ]
-        args.skip = skip
-        args.take = limit
-        const allPlayers = await prisma.tbl_playerdata.findMany(args)
-        return allPlayers
+    async getAllPlayers(queryParams) {
+        const { args, searchArgs } = this.getQueryParameters(queryParams);
+        return await prisma.$transaction([
+            prisma.tbl_playerdata.findMany(args),
+            prisma.tbl_playerdata.count(searchArgs),
+        ])
     }
 
     async getGames() {
@@ -244,5 +196,47 @@ export default class Prisma {
             },
             data: server
         })
+    }
+
+    getQueryParameters({ limit, skip, filters, sorter }) {
+        const args = {}
+        if (filters) {
+            const orArray = [];
+
+            for (const [key, value] of Object.entries(filters)) {
+                if (key && value && value.length) {
+                    orArray.push({
+                        [key]: {
+                            contains: value[0],
+                        }
+                    });
+                }
+            }
+
+            if (orArray.length) {
+                args.where = {
+                    OR: orArray
+                }
+            }
+        }
+
+        const searchArgs = { ...args };
+
+        if (sorter && sorter.field && sorter.order) {
+            const order = sorter?.order === "ascend" ? 'asc' : 'desc'
+            args.orderBy = [
+                {
+                    [sorter.field]: order,
+                }
+            ]
+        }
+
+        if (skip) args.skip = skip
+        if (limit) args.take = limit
+
+        return {
+            args,
+            searchArgs,
+        };
     }
 }

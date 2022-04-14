@@ -7,17 +7,23 @@ import { DELETE_VIP } from '../graphql/mutations';
 import { GET_ALL_VIPS } from '../graphql/queries';
 import { renderStatus } from '../molecules/status';
 import { renderTimestamp } from '../molecules/timestamp';
+import columnSearchProps from '../utilities/columnSearchProps';
 import { notificationWithIcon } from '../utilities/notification';
 import { VipModal } from './forms/vipForm';
 
 export function VipsTable() {
-    // const [tableSearch, setTableSearch] = useState({ searchText: '', searchedColumn: '' });
-    const [tableConfig, /*setTableConfig */] = useState({ current: 1, pageSize: 10 });
+    const DEFAULT_PAGE_SIZE = 20;
+    const [tableSearch, setTableSearch] = useState({ searchText: '', searchedColumn: '' });
+    const [tableConfig, setTableConfig] = useState({ current: 1, pageSize: DEFAULT_PAGE_SIZE, sorter: { field: 'timestamp', order: 'descend' } });
     const [getVips, { data: vipsData, loading }] = useLazyQuery(GET_ALL_VIPS, {
         fetchPolicy: 'no-cache',
         variables: {
-            limit: tableConfig.pageSize,
-            skip: (tableConfig.current - 1) * tableConfig.pageSize,
+            queryParams: {
+                limit: tableConfig.pageSize,
+                skip: (tableConfig.current - 1) * tableConfig.pageSize,
+                filters: tableConfig.filters,
+                sorter: tableConfig.sorter,
+            }
         },
     });
 
@@ -32,19 +38,37 @@ export function VipsTable() {
     });
 
     useEffect(() => {
-        fetchVips(tableConfig.current, tableConfig.pageSize);
+        fetchVips(tableConfig.current, tableConfig.pageSize, tableConfig.filters, tableConfig.sorter);
         // eslint-disable-next-line
     }, []);
 
-    const fetchVips = (page, size, filters) => {
+    const fetchVips = (page, size, filters, sorter) => {
         getVips({
             fetchPolicy: 'no-cache',
             variables: {
-                limit: size,
-                skip: (page - 1) * size,
+                queryParams: {
+                    limit: size,
+                    skip: (page - 1) * size,
+                    filters,
+                    sorter,
+                }
             },
         });
     }
+
+    const handleTableChange = (pagination, filters, sorter) => {
+        const page = pagination?.current ?? 1;
+        const size = pagination?.pageSize ?? DEFAULT_PAGE_SIZE;
+        const { field, order } = sorter;
+        setTableConfig({
+            current: page,
+            pageSize: size,
+            filters,
+            sorter: { field, order },
+        });
+
+        fetchVips(page, size, filters, { field, order });
+    };
 
     const handleDelete = (vipId) => {
         deleteVip({
@@ -59,33 +83,44 @@ export function VipsTable() {
             title: 'Soldier',
             dataIndex: 'playername',
             key: 'playername',
+            sorter: true,
+            ...columnSearchProps('name', 'Search by name', [tableSearch, setTableSearch]),
         },
         {
             title: 'Status',
             dataIndex: 'status',
             key: 'status',
-            render: status => renderStatus(status)
+            sorter: true,
+            ...columnSearchProps('status', 'Search by status', [tableSearch, setTableSearch]),
+            render: status => renderStatus(status),
         },
         {
             title: 'Expiration',
             dataIndex: 'timestamp',
             key: 'timestamp',
+            sorter: true,
+            defaultSortOrder: 'descend',
             render: (timestamp, row) => renderTimestamp(row)
         },
         {
             title: 'Admin',
             dataIndex: 'admin',
             key: 'admin',
+            sorter: true,
+            ...columnSearchProps('admin', 'Search by admin', [tableSearch, setTableSearch]),
         },
         {
             title: 'Comment',
             dataIndex: 'comment',
             key: 'comment',
+            sorter: true,
+            ...columnSearchProps('comment', 'Search by comment', [tableSearch, setTableSearch]),
         },
         {
             title: 'Discord ID',
             dataIndex: 'discord_id',
             key: 'discord_id',
+            sorter: true,
         },
         {
             title: 'Actions',
@@ -113,6 +148,19 @@ export function VipsTable() {
                 </Tooltip>
             </Col>
         </Row>
-        <Table size="small" rowKey={'ID'} loading={loading} dataSource={vipsData?.allVips} columns={columns} />
+        <Table
+            size="small"
+            rowKey={'ID'}
+            loading={loading}
+            dataSource={vipsData?.allVips?.data}
+            onChange={handleTableChange}
+            columns={columns}
+            pagination={{
+                showSizeChanger: false,
+                total: vipsData?.allVips?.count,
+                ...tableConfig,
+                position: [/*'topRight', */'bottomRight'],
+            }}
+        />
     </>;
 }

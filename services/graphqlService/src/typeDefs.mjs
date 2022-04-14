@@ -3,6 +3,8 @@ import { gql } from 'apollo-server-core'
 export const typeDefs = gql`
   scalar BigInt
   scalar Timestamp
+  scalar JSON
+  scalar JSONObject
 
   type Token {
     accessToken: String
@@ -109,6 +111,11 @@ export const typeDefs = gql`
     ping: Int
   }
 
+  type PaginatedVipData {
+    count: Int!
+    data: [Vip!]
+  }
+
   type PaginatedPlayerData {
     count: Int!
     data: [PlayerData!]
@@ -122,16 +129,23 @@ export const typeDefs = gql`
   type Query {
     me: User
     vip(id: Int!): Vip
-    allVips: [Vip!]!
+    allVips(queryParams: TableInput): PaginatedVipData!
     getVip(vipId: Int!): Vip
-    allPlayers(skip: Int, limit: Int, search: String): PaginatedPlayerData!
-    allUsers(skip: Int, limit: Int, search: String): PaginatedUserData!
+    allPlayers(queryParams: TableInput): PaginatedPlayerData!
+    allUsers(queryParams: TableInput): PaginatedUserData!
     getUser(userId: Int!): User
     getGames: [Game!]!
     getServers: [Server!]!
     getServersByGameID(gameID: Int!): [Server!]!
     serverInfo(serverId: Int!): ServerInfo
     listPlayers(serverId: Int!): [Player]
+  }
+
+  input TableInput {
+    skip: Int
+    limit: Int
+    filters: JSON
+    sorter: JSON
   }
 
   input UserInput {
