@@ -89,7 +89,7 @@ jobs:
   build_and_push_battlemanager_managementfrontend:
     needs: [checkwebhookurl]
     name: Build BattleManager management frontend docker image and push to Docker Hub
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       -
         name: Checkout
@@ -215,7 +215,7 @@ jobs:
   build_and_push_battlemanager_rconconnector_arm64:
     needs: [checkwebhookurl]
     name: Build BattleManager rcon connector docker image and push to Docker Hub
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       -
         name: Checkout
