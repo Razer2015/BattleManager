@@ -2,12 +2,16 @@ import { ApolloServer } from 'apollo-server-fastify';
 import { ApolloServerPluginDrainHttpServer, AuthenticationError } from 'apollo-server-core';
 import fastify from 'fastify';
 import FastifyCookie from 'fastify-cookie'
+import FastifyUrlData from 'fastify-url-data'
 import FastifyCors from 'fastify-cors'
 import { typeDefs } from './typeDefs.mjs';
 import { resolvers } from './resolvers.mjs';
 import 'dotenv/config'
 import { getUser, refreshIfNeeded } from './utils/authentication.mjs';
 import { ACCESS_TOKEN_NAME as ACCESS_TOKEN_NAME, REFRESH_TOKEN_NAME as REFRESH_TOKEN_NAME } from './constants.mjs';
+import authenticationHook from './hooks/authenticationHook.mjs';
+import routes from './routes/routes.mjs'
+import User from './logic/user.mjs';
 
 /**
  * 
@@ -35,6 +39,43 @@ async function startApolloServer(typeDefs, resolvers) {
         parseOptions: {}     // options for parsing cookies
     })
 
+    // Add support for parsing the URL and the parameters separately
+    app.register(FastifyUrlData)
+
+    // Add authentication handler (for REST calls)
+    app.addHook('preHandler', authenticationHook())
+
+    // Add routes
+    app.register(routes)
+        .then((server) => {
+            console.log('Routes installed')
+
+            // Seed the database
+            const adminUsername = process.env.ADMIN_USERNAME ?? "admin";
+            const adminEmail = process.env.ADMIN_EMAIL;
+            const adminPassword = process.env.ADMIN_PASSWORD;
+
+            const user = new User();
+            return user.createUser({
+                name: adminUsername,
+                email: adminEmail,
+                password: adminPassword,
+                roles: [1],
+            })
+                .then(result => {
+                    console.log(`User ${adminEmail} (${adminUsername}) added with the seed`);
+                    return server;
+                })
+                .catch(error => {
+                    console.error(`Failed to add the admin user becuase: ${error}`);
+                    return server;
+                });
+        })
+        .catch((error) => {
+            console.error(`Failed to intall routes ${error}`)
+        })
+
+    // Add GraphQL support
     const server = new ApolloServer({
         typeDefs,
         resolvers,

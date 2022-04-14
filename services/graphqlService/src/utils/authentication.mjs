@@ -150,3 +150,17 @@ export const checkAuthentication = (token, user, roles) => {
         if (!user?.roles?.includes(roles)) throw new ForbiddenError('Your user doesn\'t have access to this resource.');
     }
 }
+
+export const hasRole = (user, roles) => {
+    if (!user) return false;
+    if (!roles) return false;
+
+    if (Array.isArray(roles)) {
+        if (!user?.roles?.some(r => roles.includes(r))) return false;
+    }
+    else if (typeof roles === 'string' || roles instanceof String) {
+        if (!user?.roles?.includes(roles)) return false;
+    }
+
+    return true;
+}

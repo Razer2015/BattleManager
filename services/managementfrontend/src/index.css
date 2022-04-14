@@ -11,3 +11,17 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* #region Scoreboard table styles */
+table th.attackers {
+  background-color: #00b7ff !important;
+  font-weight: 700 !important;
+  font-size: 16px;
+}
+
+table th.defenders {
+  background-color: #c03513 !important;
+  font-weight: 700 !important;
+  font-size: 16px;
+}
+/* #endregion */

@@ -48,19 +48,19 @@ export default class Vip extends BaseLogic {
             comment,
             discord_id,
         })
-        .catch(e => {
-            if (e instanceof Prisma.PrismaClientKnownRequestError) {
-                if (e.code === 'P2002') {
-                    console.log(
-                        'There is a unique constraint violation, a player with this name already exists.'
-                    )
+            .catch(e => {
+                if (e instanceof Prisma.PrismaClientKnownRequestError) {
+                    if (e.code === 'P2002') {
+                        console.log(
+                            'There is a unique constraint violation, a player with this name already exists.'
+                        )
 
-                    throw new UserConflictError('User with the same playername already exists.');
+                        throw new UserConflictError('User with the same playername already exists.');
+                    }
                 }
-            }
 
-            throw e
-        });
+                throw e
+            });
 
         if (!vip) throw new Error('Failed to update vip');
 
@@ -80,7 +80,11 @@ export default class Vip extends BaseLogic {
         return this.db.getVipById(args?.vipId);
     }
 
-    getVips() {
-        return this.db.getAllVips();
+    async getVips(queryParams) {
+        const [data, count] = await this.db.getAllVips(queryParams);
+        return {
+            count: count,
+            data: data
+        };
     }
 }

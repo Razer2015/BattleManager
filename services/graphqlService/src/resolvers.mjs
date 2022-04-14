@@ -7,6 +7,7 @@ import User from "./logic/user.mjs";
 import Vip from "./logic/vip.mjs";
 import { Timestamp, BigIntScalar } from "./scalarTypes.mjs";
 import { checkAuthentication } from "./utils/authentication.mjs";
+import GraphQLJSON, { GraphQLJSONObject } from 'graphql-type-json';
 
 const dbClient = new Prisma()
 
@@ -18,6 +19,8 @@ export const resolvers = {
             return new Role(dbClient).getUserRoles(root);
         },
     },
+    JSON: GraphQLJSON,
+    JSONObject: GraphQLJSONObject,
     Query: {
         async me(root, args, { token, user }, info) {
             return {
@@ -33,7 +36,7 @@ export const resolvers = {
         async allVips(root, args, { token, user }, info) {
             checkAuthentication(token, user, ['super', 'admin']);
 
-            return new Vip(dbClient).getVips();
+            return new Vip(dbClient).getVips(args?.queryParams);
         },
         async getVip(root, args, { token, user }, info) {
             checkAuthentication(token, user, ['super', 'admin']);
@@ -43,12 +46,12 @@ export const resolvers = {
         async allPlayers(root, args, { token, user }, info) {
             checkAuthentication(token, user, ['super', 'admin']);
 
-            return new Player(dbClient).getPlayers(args);
+            return new Player(dbClient).getPlayers(args?.queryParams);
         },
         async allUsers(root, args, { token, user }, info) {
             checkAuthentication(token, user, ['super']);
 
-            return new User(dbClient).getUsers(args);
+            return new User(dbClient).getUsers(args?.queryParams);
         },
         async getGames(root, args, { token, user }, info) {
             checkAuthentication(token, user, ['super', 'admin']);
@@ -64,6 +67,17 @@ export const resolvers = {
             checkAuthentication(token, user, ['super', 'admin']);
 
             return new Server(dbClient).getServersByGameID(args);
+        },
+
+        async serverInfo(root, args, { token, user }, info) {
+            checkAuthentication(token, user, ['super', 'admin', 'user']);
+
+            return new Server(dbClient).getServerInfo(user, args);
+        },
+        async listPlayers(root, args, { token, user }, info) {
+            checkAuthentication(token, user, ['super', 'admin', 'user']);
+
+            return new Server(dbClient).getServerPlayers(user, args);
         },
     },
     Mutation: {

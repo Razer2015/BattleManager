@@ -108,8 +108,8 @@ export default class User extends BaseLogic {
             });
     }
 
-    async getUsers(args) {
-        const [users, usersCount] = await this.db.getAllUsers(args);
+    async getUsers(queryParams) {
+        const [users, usersCount] = await this.db.getAllUsers(queryParams);
         return {
             count: usersCount,
             data: users.map(user => {

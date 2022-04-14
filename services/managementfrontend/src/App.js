@@ -51,7 +51,7 @@ function BaseLayout() {
   }
 
   return (
-    <Layout style={{ height: "100vh" }}>
+    <Layout style={{ height: "100%", minHeight: '100vh' }}>
       <Sider
         breakpoint="lg"
         collapsedWidth="0"
@@ -68,18 +68,24 @@ function BaseLayout() {
           justifyContent: 'center',
         }}><Typography.Title style={{ fontSize: '24px' }}>BattleManager</Typography.Title></Header>
         <Menu theme="dark" mode="inline" defaultSelectedKeys={[location.pathname]}>
-          <Menu.Item key="/" icon={<HomeOutlined />}>
-            <span>Home</span>
-            <Link to="/" />
-          </Menu.Item>
-          <Menu.Item key="/vips" icon={<DollarOutlined />}>
-            <span>Vips</span>
-            <Link to="/vips" />
-          </Menu.Item>
-          <Menu.Item key="/players" icon={<UserOutlined />}>
-            <span>Players</span>
-            <Link to="/players" />
-          </Menu.Item>
+          {hasRole(['user', 'admin', 'super']) && (
+            <Menu.Item key="/" icon={<HomeOutlined />}>
+              <span>Home</span>
+              <Link to="/" />
+            </Menu.Item>
+          )}
+          {hasRole(['admin', 'super']) && (
+            <>
+              <Menu.Item key="/vips" icon={<DollarOutlined />}>
+                <span>Vips</span>
+                <Link to="/vips" />
+              </Menu.Item>
+              <Menu.Item key="/players" icon={<UserOutlined />}>
+                <span>Players</span>
+                <Link to="/players" />
+              </Menu.Item>
+            </>
+          )}
           {hasRole('super') && (
             <Menu.Item key="/users" icon={<UserOutlined />}>
               <span>Users</span>
@@ -95,9 +101,15 @@ function BaseLayout() {
         <Content>
           <Routes>
             <Route element={<PrivateOutlet />}>
-              <Route path="/" element={<HomeView />} />
-              <Route path="/vips" element={<VipsManagementView />} />
-              <Route path="/players" element={<PlayersView />} />
+              {hasRole(['user', 'admin', 'super']) && (
+                <Route path="/" element={<HomeView />} />
+              )}
+              {hasRole(['admin', 'super']) && (
+                <>
+                  <Route path="/vips" element={<VipsManagementView />} />
+                  <Route path="/players" element={<PlayersView />} />
+                </>
+              )}
               {hasRole('super') && (
                 <Route path="/users" element={<UsersView />} />
               )}

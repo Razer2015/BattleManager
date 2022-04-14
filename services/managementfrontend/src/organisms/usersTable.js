@@ -12,13 +12,18 @@ import { notificationWithIcon } from '../utilities/notification';
 import { UserModal } from './forms/userForm';
 
 export function UsersTable() {
+    const DEFAULT_PAGE_SIZE = 20;
     const [tableSearch, setTableSearch] = useState({ searchText: '', searchedColumn: '' });
-    const [tableConfig, setTableConfig] = useState({ current: 1, pageSize: 10 });
+    const [tableConfig, setTableConfig] = useState({ current: 1, pageSize: DEFAULT_PAGE_SIZE, sorter: { field: 'is_logged_in', order: 'descend' } });
     const [getUsers, { data: usersData, loading }] = useLazyQuery(GET_ALL_USERS, {
         fetchPolicy: 'no-cache',
         variables: {
-            limit: tableConfig.pageSize,
-            skip: (tableConfig.current - 1) * tableConfig.pageSize,
+            queryParams: {
+                limit: tableConfig.pageSize,
+                skip: (tableConfig.current - 1) * tableConfig.pageSize,
+                filters: tableConfig.filters,
+                sorter: tableConfig.sorter,
+            }
         },
     });
 
@@ -34,28 +39,33 @@ export function UsersTable() {
 
     const handleTableChange = (pagination, filters, sorter) => {
         const page = pagination?.current ?? 1;
-        const size = pagination?.pageSize ?? 10;
+        const size = pagination?.pageSize ?? DEFAULT_PAGE_SIZE;
+        const { field, order } = sorter;
         setTableConfig({
             current: page,
             pageSize: size,
+            filters,
+            sorter: { field, order },
         });
 
-        fetchUsers(page, size, filters);
+        fetchUsers(page, size, filters, { field, order });
     };
 
     useEffect(() => {
-        fetchUsers(tableConfig.current, tableConfig.pageSize);
+        fetchUsers(tableConfig.current, tableConfig.pageSize, tableConfig.filters, tableConfig.sorter);
         // eslint-disable-next-line
     }, [])
 
-    const fetchUsers = (page, size, filters) => {
-        const search = filters?.SoldierName?.length ? filters?.SoldierName[0] : null
+    const fetchUsers = (page, size, filters, sorter) => {
         getUsers({
             fetchPolicy: 'no-cache',
             variables: {
-                limit: size,
-                skip: (page - 1) * size,
-                search,
+                queryParams: {
+                    limit: size,
+                    skip: (page - 1) * size,
+                    filters,
+                    sorter,
+                }
             },
         });
     }
@@ -74,11 +84,14 @@ export function UsersTable() {
             dataIndex: 'name',
             key: 'name',
             ...columnSearchProps('name', 'Search by name', [tableSearch, setTableSearch]),
+            sorter: true,
         },
         {
             title: 'Email',
             dataIndex: 'email',
             key: 'email',
+            ...columnSearchProps('email', 'Search by email', [tableSearch, setTableSearch]),
+            sorter: true,
         },
         {
             title: 'Roles',
@@ -88,9 +101,11 @@ export function UsersTable() {
         },
         {
             title: 'Signed in',
-            dataIndex: 'signedIn',
+            dataIndex: 'is_logged_in',
             key: 'signedIn',
-            render: (signedIn, row) => renderSignedIn(signedIn)
+            sorter: true,
+            defaultSortOrder: 'descend',
+            render: (signedIn, row) => renderSignedIn(row?.signedIn)
         },
         {
             title: 'Actions',
@@ -120,6 +135,7 @@ export function UsersTable() {
         </Row>
         <Table
             rowKey={'userId'}
+            size="small"
             loading={loading}
             dataSource={usersData?.allUsers?.data}
             columns={columns}

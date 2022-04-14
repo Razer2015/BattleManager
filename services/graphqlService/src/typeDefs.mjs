@@ -3,6 +3,8 @@ import { gql } from 'apollo-server-core'
 export const typeDefs = gql`
   scalar BigInt
   scalar Timestamp
+  scalar JSON
+  scalar JSONObject
 
   type Token {
     accessToken: String
@@ -66,6 +68,54 @@ export const typeDefs = gql`
     updated_at:                                                        Timestamp
   }
 
+  type ServerInfo {
+    server_name:                                                       String
+    playercount:                                                       Int
+    max_playercount:                                                   Int
+    game_mode:                                                         String
+    map:                                                               String
+    rounds_played:                                                     Int
+    rounds_total:                                                      Int
+    scores:                                                            Scores
+    online_state:                                                      String
+    ranked:                                                            Boolean
+    punkbuster:                                                        Boolean
+    has_gamepassword:                                                  Boolean
+    server_uptime:                                                     Timestamp
+    roundtime:                                                         Timestamp
+    game_ip_and_port:                                                  String
+    punkbuster_version:                                                String
+    join_queue_enabled:                                                Boolean
+    region:                                                            String
+    closest_ping_site:                                                 String
+    country:                                                           String
+    blaze_player_count:                                                Int
+    blaze_game_state:                                                  String
+  }
+
+  type Scores {
+    number_of_entries: Int
+    scores: [Int]
+    target_score: Int
+  }
+
+  type Player {
+    player_name: String
+    eaid: String
+    squad: Int
+    team: Int
+    kills: Int
+    deaths: Int
+    score: Int
+    rank: Int
+    ping: Int
+  }
+
+  type PaginatedVipData {
+    count: Int!
+    data: [Vip!]
+  }
+
   type PaginatedPlayerData {
     count: Int!
     data: [PlayerData!]
@@ -79,14 +129,23 @@ export const typeDefs = gql`
   type Query {
     me: User
     vip(id: Int!): Vip
-    allVips: [Vip!]!
+    allVips(queryParams: TableInput): PaginatedVipData!
     getVip(vipId: Int!): Vip
-    allPlayers(skip: Int, limit: Int, search: String): PaginatedPlayerData!
-    allUsers(skip: Int, limit: Int, search: String): PaginatedUserData!
+    allPlayers(queryParams: TableInput): PaginatedPlayerData!
+    allUsers(queryParams: TableInput): PaginatedUserData!
     getUser(userId: Int!): User
     getGames: [Game!]!
     getServers: [Server!]!
     getServersByGameID(gameID: Int!): [Server!]!
+    serverInfo(serverId: Int!): ServerInfo
+    listPlayers(serverId: Int!): [Player]
+  }
+
+  input TableInput {
+    skip: Int
+    limit: Int
+    filters: JSON
+    sorter: JSON
   }
 
   input UserInput {

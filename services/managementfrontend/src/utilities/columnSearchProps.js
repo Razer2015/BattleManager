@@ -3,7 +3,7 @@ import { Button, Input, Space } from 'antd';
 
 const columnSearchProps = (dataIndex, placeholder, searchState) => {
     const useSearchState = searchState && searchState.length === 2
-    const [/*tableSearch, */ setTableSearch] = searchState ? searchState : []
+    const [tableSearch, setTableSearch] = searchState ? searchState : []
 
     const handleSearch = (selectedKeys, confirm, dataIndex) => {
         confirm();
