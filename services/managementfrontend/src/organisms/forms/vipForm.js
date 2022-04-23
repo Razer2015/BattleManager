@@ -80,9 +80,10 @@ export function VipModal({ id }) {
     }
 
     const setValidUntilDays = (days) => {
+        const baseTime = (moment().unix() * 1000) > vipData?.getVip?.timestamp ? moment() : moment(vipData?.getVip?.timestamp);
         form.setFields([{
             name: 'timestamp',
-            value: moment(vipData?.getVip?.timestamp).add(days, 'days')
+            value: baseTime.add(days, 'days')
         }]);
 
         form.validateFields(['timestamp']);
