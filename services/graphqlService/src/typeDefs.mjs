@@ -192,4 +192,17 @@ export const typeDefs = gql`
     updateVip(vipId: Int!, vip: VipUpdateInput!): Vip
     deleteVip(vipId: Int!): Vip
   }
+
+  type ChatMessage {
+    visibility: String!
+    message: String
+    player: String!
+    teamId: Int
+    squadId: Int
+    timestamp: Timestamp
+  }
+
+  type Subscription {
+    chatMessageReceived: ChatMessage
+  }
 `;

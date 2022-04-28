@@ -10,13 +10,38 @@ import {
   createHttpLink,
   ApolloProvider,
   from,
+  split,
 } from "@apollo/client";
 import { onError } from "@apollo/client/link/error";
+import { getMainDefinition } from '@apollo/client/utilities';
+import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
+import { createClient } from 'graphql-ws';
 
 const httpLink = createHttpLink({
   uri: window?.config?.BACKEND_ENDPOINT ?? process.env.REACT_APP_GRAPHQL_HOST,
   credentials: 'include'
 });
+
+const wsLink = new GraphQLWsLink(createClient({
+  url: window?.config?.WEBSOCKET_ENDPOINT ?? process.env.REACT_APP_WEBSOCKET_ENDPOINT,
+}));
+
+// The split function takes three parameters:
+//
+// * A function that's called for each operation to execute
+// * The Link to use for an operation if the function returns a "truthy" value
+// * The Link to use for an operation if the function returns a "falsy" value
+const splitLink = split(
+  ({ query }) => {
+    const definition = getMainDefinition(query);
+    return (
+      definition.kind === 'OperationDefinition' &&
+      definition.operation === 'subscription'
+    );
+  },
+  wsLink,
+  httpLink,
+);
 
 const errorLink = onError(({ graphQLErrors, networkError }) => {
   // if (graphQLErrors) {
@@ -30,7 +55,7 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
 });
 
 const client = new ApolloClient({
-  link: from([errorLink, httpLink]),
+  link: from([errorLink, splitLink]),
   cache: new InMemoryCache(),
 });
 

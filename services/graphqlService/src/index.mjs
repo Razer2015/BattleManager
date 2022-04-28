@@ -12,6 +12,9 @@ import { ACCESS_TOKEN_NAME as ACCESS_TOKEN_NAME, REFRESH_TOKEN_NAME as REFRESH_T
 import authenticationHook from './hooks/authenticationHook.mjs';
 import routes from './routes/routes.mjs'
 import User from './logic/user.mjs';
+import { WebSocketServer } from 'ws';
+import { useServer } from 'graphql-ws/lib/use/ws';
+import { makeExecutableSchema } from '@graphql-tools/schema';
 
 /**
  * 
@@ -75,10 +78,24 @@ async function startApolloServer(typeDefs, resolvers) {
             console.error(`Failed to intall routes ${error}`)
         })
 
+    const schema = makeExecutableSchema({ typeDefs, resolvers });
+
+    // Creating the WebSocket server
+    const wsServer = new WebSocketServer({
+        // This is the `httpServer` we created in a previous step.
+        server: app.server,
+        // Pass a different path here if your ApolloServer serves at
+        // a different path.
+        path: '/graphql',
+    });
+
+    // Hand in the schema we just created and have the
+    // WebSocketServer start listening.
+    const serverCleanup = useServer({ schema }, wsServer);
+
     // Add GraphQL support
     const server = new ApolloServer({
-        typeDefs,
-        resolvers,
+        schema,
         context: async ({ request, reply }) => {
             // To find out the correct arguments for a specific integration,
             // see https://www.apollographql.com/docs/apollo-server/api/apollo-server/#middleware-specific-context-fields
@@ -136,7 +153,18 @@ async function startApolloServer(typeDefs, resolvers) {
         },
         plugins: [
             fastifyAppClosePlugin(app),
+            // Proper shutdown for the HTTP server.
             ApolloServerPluginDrainHttpServer({ httpServer: app.server }),
+            // Proper shutdown for the WebSocket server.
+            {
+                async serverWillStart() {
+                    return {
+                        async drainServer() {
+                            await serverCleanup.dispose();
+                        },
+                    };
+                },
+            },
         ],
     });
 

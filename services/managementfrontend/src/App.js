@@ -1,6 +1,6 @@
 import './App.css';
 import { Layout, Menu, Typography } from 'antd';
-import { DollarOutlined, HomeOutlined, UserOutlined } from '@ant-design/icons';
+import { DollarOutlined, HomeOutlined, UserOutlined, WechatOutlined } from '@ant-design/icons';
 import {
   BrowserRouter as Router,
   Routes,
@@ -18,6 +18,7 @@ import Auth, { AuthContext } from './components/authComponent';
 import { UsersView } from './views/usersView';
 import { useContext } from 'react';
 import { NotFound } from './views/notFoundView';
+import { ChatView } from './views/chatView';
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -74,6 +75,12 @@ function BaseLayout() {
               <Link to="/" />
             </Menu.Item>
           )}
+          {hasRole(['user', 'admin', 'super']) && (
+            <Menu.Item key="/chat" icon={<WechatOutlined />}>
+              <span>Chat</span>
+              <Link to="/chat" />
+            </Menu.Item>
+          )}
           {hasRole(['admin', 'super']) && (
             <>
               <Menu.Item key="/vips" icon={<DollarOutlined />}>
@@ -103,6 +110,9 @@ function BaseLayout() {
             <Route element={<PrivateOutlet />}>
               {hasRole(['user', 'admin', 'super']) && (
                 <Route path="/" element={<HomeView />} />
+              )}
+              {hasRole(['user', 'admin', 'super']) && (
+                <Route path="/chat" element={<ChatView />} />
               )}
               {hasRole(['admin', 'super']) && (
                 <>

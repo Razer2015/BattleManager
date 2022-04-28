@@ -8,8 +8,10 @@ import Vip from "./logic/vip.mjs";
 import { Timestamp, BigIntScalar } from "./scalarTypes.mjs";
 import { checkAuthentication } from "./utils/authentication.mjs";
 import GraphQLJSON, { GraphQLJSONObject } from 'graphql-type-json';
+import Publisher from "./publisher.mjs";
 
 const dbClient = new Prisma()
+const pubsub = Publisher.getInstance()
 
 export const resolvers = {
     Timestamp: Timestamp,
@@ -127,5 +129,10 @@ export const resolvers = {
         async tokenSafe(root, args, { reply, refreshToken, user }, info) {
             return new User(dbClient).tokenSafe(reply, refreshToken);
         },
+    },
+    Subscription: {
+        chatMessageReceived: {
+            subscribe: () => pubsub.asyncIterator(['CHAT_MESSAGE_RECEIVED']),
+        }
     }
 };

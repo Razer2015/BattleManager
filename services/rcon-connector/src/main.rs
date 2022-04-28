@@ -3,14 +3,16 @@ extern crate log;
 
 use actix_web::{middleware, web, App, HttpServer};
 use ascii::IntoAsciiString;
+use battlefield_rcon::bf4::Event::Chat;
 use battlefield_rcon::bf4::{Bf4Client, ServerInfoError};
 use dotenv::dotenv;
 use futures::join;
+use futures::StreamExt;
 
 use async_std::task;
 use std::{thread, time::Duration};
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 mod endpoints;
 mod logging;
@@ -74,6 +76,35 @@ async fn main() -> std::io::Result<()> {
         .await
         .unwrap();
 
+    let events_bf4 = bf4.clone();
+    let events_backend = backend_api.clone();
+    let events_internal_token = internal_token.clone();
+    let events_task = task::spawn(async move {
+        let chat_client = reqwest::blocking::Client::new();
+        let mut event_stream = events_bf4.event_stream().await.unwrap();
+        while let Some(event) = event_stream.next().await {
+            match event {
+                Ok(Chat { vis, player, msg }) => {
+                    match serde_json::to_string(&Chat { vis, player, msg }) {
+                        Ok(serialized_chat) => match chat_client
+                            .post(format!("{}/internal/server/chat", events_backend))
+                            .header("Authorization", events_internal_token.to_string())
+                            .header("User-Agent", "battlemanager/rcon-connector")
+                            .header("Content-Type", "application/json")
+                            .body(serialized_chat)
+                            .send()
+                        {
+                            Ok(_) => (),
+                            Err(error) => error!("Couldn't serialize chat message. {:?}", error),
+                        },
+                        Err(error) => error!("Couldn't send chat message to backend. {:?}", error),
+                    };
+                }
+                _ => (),
+            }
+        }
+    });
+
     let keep_alive_bf4 = bf4.clone();
     let keep_alive = task::spawn(async move {
         let wait_time = Duration::from_secs(1 * 60); // 1 minute
@@ -90,8 +121,9 @@ async fn main() -> std::io::Result<()> {
                     let client = reqwest::blocking::Client::new();
                     let serialized_info = serde_json::to_string(&BroadcastInfo {
                         game_ip_and_port: rcon_ipport.to_string(),
-                        connection_endpoint: host_hostname.to_string()
-                    }).unwrap();
+                        connection_endpoint: host_hostname.to_string(),
+                    })
+                    .unwrap();
                     match client
                         .post(format!("{}/internal/server/broadcast", backend_api))
                         .header("Authorization", internal_token.to_string())
@@ -132,7 +164,7 @@ async fn main() -> std::io::Result<()> {
     .unwrap()
     .run();
 
-    _ = join!(rest_api, keep_alive);
+    _ = join!(events_task, rest_api, keep_alive);
 
     info!("Shutting down");
 
