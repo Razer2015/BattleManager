@@ -111,7 +111,7 @@ export const resolvers = {
         async deleteVip(root, args, { token, user }, info) {
             checkAuthentication(token, user, ['super', 'admin']);
 
-            return new Vip(dbClient).deleteVip(args);
+            return new Vip(dbClient).deleteVip(user, args);
         },
         async login(root, args, { token, user }, info) {
             return new User(dbClient).login(args);

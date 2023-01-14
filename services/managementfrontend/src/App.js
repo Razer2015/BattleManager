@@ -43,7 +43,7 @@ function BaseLayout() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-      }}><Typography.Title style={{ fontSize: '24px' }}>BattleManager</Typography.Title></Header>
+      }}><Typography.Title style={{ fontSize: '24px', wordBreak: 'normal' }}>BattleManager</Typography.Title></Header>
       <Content>
         <LoginView />
       </Content>
@@ -67,7 +67,7 @@ function BaseLayout() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-        }}><Typography.Title style={{ fontSize: '24px' }}>BattleManager</Typography.Title></Header>
+        }}><Typography.Title style={{ fontSize: '24px', wordBreak: 'normal' }}>BattleManager</Typography.Title></Header>
         <Menu theme="dark" mode="inline" defaultSelectedKeys={[location.pathname]}>
           {hasRole(['user', 'admin', 'super']) && (
             <Menu.Item key="/" icon={<HomeOutlined />}>
@@ -75,12 +75,12 @@ function BaseLayout() {
               <Link to="/" />
             </Menu.Item>
           )}
-          {hasRole(['user', 'admin', 'super']) && (
+          {/* {hasRole(['user', 'admin', 'super']) && (
             <Menu.Item key="/chat" icon={<WechatOutlined />}>
               <span>Chat</span>
               <Link to="/chat" />
             </Menu.Item>
-          )}
+          )} */}
           {hasRole(['admin', 'super']) && (
             <>
               <Menu.Item key="/vips" icon={<DollarOutlined />}>

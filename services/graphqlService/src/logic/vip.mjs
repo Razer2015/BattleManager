@@ -20,6 +20,10 @@ export default class Vip extends BaseLogic {
             comment,
             discord_id,
         })
+            .then(vip => {
+                this.discord.postVipCreate(vip, user);
+                return vip;
+            })
             .catch(e => {
                 if (e instanceof Prisma.PrismaClientKnownRequestError) {
                     if (e.code === 'P2002') {
@@ -48,6 +52,10 @@ export default class Vip extends BaseLogic {
             comment,
             discord_id,
         })
+            .then(vip => {
+                this.discord.postVipUpdate(vip, user);
+                return vip;
+            })
             .catch(e => {
                 if (e instanceof Prisma.PrismaClientKnownRequestError) {
                     if (e.code === 'P2002') {
@@ -67,11 +75,15 @@ export default class Vip extends BaseLogic {
         return vip;
     }
 
-    async deleteVip({ vipId }) {
+    async deleteVip(user, { vipId }) {
         const vip = await this.db.getVipById(vipId);
         if (!vip) throw new NotFoundError('Vip not found');
 
-        await this.db.deleteVip(vipId);
+        await this.db.deleteVip(vipId)
+            .then(vip => {
+                this.discord.postVipDelete(vip, user);
+                return vip;
+            });
 
         return vip;
     }
